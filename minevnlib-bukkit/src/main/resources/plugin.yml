@@ -1,0 +1,4 @@
+name: MineVNLib
+author: MineVN
+main: net.minevn.lib.bukkit.MineVNLib
+version: 1.0
