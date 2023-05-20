@@ -56,10 +56,11 @@ class Command : TabExecutor {
 	 *
 	 * Function parameter:
 	 * - CommandSender
-	 * - Int: The index of current argument. For example if you
-	 *   request for suggestions when typing `/foo bar baz`, the
-	 *   index is 1
-	 * - String: The current (last) agrument, `/foo bar baz` will be `baz`
+	 * - Int: The index of current argument. If you
+	 *   request for suggestions when typing `/foo bar baz`,
+	 *   the index is 1
+	 * - String: The current (last) agrument,
+	 *   `/foo bar baz` will be `baz`
 	 */
 	fun onTabComplete(callBack: (CommandSender, Int, String?) -> List<String>) = this.apply {
 		onTabComplete = callBack
