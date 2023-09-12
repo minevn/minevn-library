@@ -1,4 +1,4 @@
-package net.minevn.lib.bukkit
+package net.minevn.libs.bukkit
 
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabExecutor
