@@ -1,8 +1,10 @@
 repositories {
-    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    maven("https://oss.sonatype.org/content/repositories/snapshots/")
+    maven {
+        setUrl("http://pack.minevn.net/repo/")
+        isAllowInsecureProtocol = true
+    }
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot-api:1.12.2-R0.1-SNAPSHOT")
+    compileOnly("minevn.depend:paper:1.12.2-b1619")
 }
