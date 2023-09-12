@@ -32,6 +32,11 @@ tasks {
     }
 
     shadowJar {
+        // relocate to avoid conflict
+        relocate("com.zaxxer.hikari", "net.minevn.libs.hikari")
+        relocate("com.fasterxml.jackson", "net.minevn.libs.jackson")
+        relocate("com.google.gson", "net.minevn.libs.gson")
+        relocate("org.slf4j", "net.minevn.libs.slf4j")
         archiveFileName.set("$jarName.jar")
     }
 
