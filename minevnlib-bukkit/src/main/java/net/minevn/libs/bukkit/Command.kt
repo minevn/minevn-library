@@ -8,14 +8,13 @@ class Command : TabExecutor {
 	private var description: String? = null
 	private var usage: String = ""
 	private val subCommands = mutableMapOf<String, Command>()
-	private var onCommand: (CommandSender, Array<String>) -> Unit = { sender, _ ->
-		val seen = mutableListOf<Command>()
+	private var onCommand: CommandAction.() -> Unit = {
 		sendSubCommandsUsage(sender) ?: run {
 			sender.sendMessage("Command action not set.")
 		}
 	}
-	private var onTabComplete: (CommandSender, Int, String?) -> List<String> =
-		{ _, index, arg ->
+	private var onTabComplete: TabCompleteAction.() -> List<String> =
+		{
 			if (index == 0) {
 				subCommands.keys
 					.filter { arg.isNullOrEmpty() || it.startsWith(arg) }
@@ -39,6 +38,10 @@ class Command : TabExecutor {
 		usage = value
 	}
 
+	private fun ((CommandSender, Array<String>) -> Unit).toCommandAction(): CommandAction.() -> Unit {
+		return { this@toCommandAction(this.sender, this.args) }
+	}
+
 	/**
 	 * The action this command will do,
 	 * when no sub-command matched.
@@ -46,8 +49,23 @@ class Command : TabExecutor {
 	 * If not set, the default action will be sending usage of
 	 * sub-commands or itself.
 	 */
-	fun onCommand(callBack: (CommandSender, Array<String>) -> Unit) = this.apply {
+	fun onCommand(callBack: (sender: CommandSender, args: Array<String>) -> Unit) = this.apply {
+		onCommand = callBack.toCommandAction()
+	}
+
+	/**
+	 * The action this command will do,
+	 * when no sub-command matched.
+	 *
+	 * If not set, the default action will be sending usage of
+	 * sub-commands or itself.
+	 */
+	fun action(callBack: CommandAction.() -> Unit) = this.apply {
 		onCommand = callBack
+	}
+
+	private fun ((CommandSender, Int, String?) -> List<String>).toTabCompleteAction(): TabCompleteAction.() -> List<String> {
+		return { this@toTabCompleteAction(this.sender, this.index, this.arg) }
 	}
 
 	/**
@@ -63,11 +81,31 @@ class Command : TabExecutor {
 	 *   `/foo bar baz` will be `baz`
 	 */
 	fun onTabComplete(callBack: (CommandSender, Int, String?) -> List<String>) = this.apply {
+		onTabComplete = callBack.toTabCompleteAction()
+	}
+
+	fun tabComplete(callBack: TabCompleteAction.() -> List<String>) = this.apply {
 		onTabComplete = callBack
 	}
 
+	/**
+	 * Add a sub-command
+	 *
+	 * @param command The sub-command
+	 * @param aliases The aliases of this sub-command
+	 */
 	fun addSubCommand(command: Command, vararg aliases: String) = this.apply {
 		aliases.forEach { subCommands[it] = command }
+	}
+
+	/**
+	 * Add a sub-command
+	 *
+	 * @param aliases The aliases of this sub-command
+	 * @param command The sub-command
+	 */
+	fun addSubCommand(vararg aliases: String, command: Command.() -> Unit) = this.apply {
+		addSubCommand(Command().apply(command), *aliases)
 	}
 
 	fun sendSubCommandsUsage(sender: CommandSender) = run {
@@ -88,7 +126,7 @@ class Command : TabExecutor {
 		args: Array<String>
 	): List<String> = subCommands[args.firstOrNull()]
 		?.onTabComplete(sender, command, alias, args.drop(1).toTypedArray())
-		?: onTabComplete(sender, args.size - 1, args.lastOrNull())
+		?: onTabComplete(TabCompleteAction(sender, args.size, args.lastOrNull()))
 
 	override fun onCommand(
 		sender: CommandSender,
@@ -98,7 +136,7 @@ class Command : TabExecutor {
 	): Boolean {
 		subCommands[args.firstOrNull()]
 			?.onCommand(sender, command, label, args.drop(1).toTypedArray())
-			?: onCommand(sender, args)
+			?: onCommand(CommandAction(sender, args))
 		return true
 	}
 
@@ -117,3 +155,25 @@ class Command : TabExecutor {
 		}
 	}
 }
+
+/**
+ * The action of a command
+ *
+ * @param sender The sender of this command
+ * @param args The arguments of this command
+ */
+class CommandAction(val sender: CommandSender, val args: Array<String>)
+
+/**
+ * The action of a tab complete
+ *
+ * @param sender The sender of this command
+ * @param index The index of current argument. If you
+ *   request for suggestions when typing `/foo bar baz`,
+ *   the index is 1
+ * @param arg The current (last) agrument,
+ *   `/foo bar baz` will be `baz`
+ */
+class TabCompleteAction(val sender: CommandSender, val index: Int, val arg: String?)
+
+fun command(block: Command.() -> Unit) = Command().apply(block)
