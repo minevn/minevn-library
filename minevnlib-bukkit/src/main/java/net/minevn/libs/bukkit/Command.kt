@@ -13,8 +13,10 @@ class Command : TabExecutor {
 			sender.sendMessage("Command action not set.")
 		}
 	}
-	private var onTabComplete: TabCompleteAction.() -> List<String> =
+	private var onTabComplete: CommandAction.() -> List<String> =
 		{
+			val index = args.size - 1
+			val arg = args.lastOrNull()
 			if (index == 0) {
 				subCommands.keys
 					.filter { arg.isNullOrEmpty() || it.startsWith(arg) }
@@ -64,8 +66,8 @@ class Command : TabExecutor {
 		onCommand = callBack
 	}
 
-	private fun ((CommandSender, Int, String?) -> List<String>).toTabCompleteAction(): TabCompleteAction.() -> List<String> {
-		return { this@toTabCompleteAction(this.sender, this.index, this.arg) }
+	private fun ((CommandSender, Array<String>) -> List<String>).toTabCompleteAction(): CommandAction.() -> List<String> {
+		return { this@toTabCompleteAction(this.sender, this.args) }
 	}
 
 	/**
@@ -80,11 +82,11 @@ class Command : TabExecutor {
 	 * - String: The current (last) agrument,
 	 *   `/foo bar baz` will be `baz`
 	 */
-	fun onTabComplete(callBack: (CommandSender, Int, String?) -> List<String>) = this.apply {
+	fun onTabComplete(callBack: (CommandSender, Array<String>) -> List<String>) = this.apply {
 		onTabComplete = callBack.toTabCompleteAction()
 	}
 
-	fun tabComplete(callBack: TabCompleteAction.() -> List<String>) = this.apply {
+	fun tabComplete(callBack: CommandAction.() -> List<String>) = this.apply {
 		onTabComplete = callBack
 	}
 
@@ -119,26 +121,42 @@ class Command : TabExecutor {
 		}
 	}
 
+	fun onTabComplete(
+		sender: CommandSender,
+		command: org.bukkit.command.Command?,
+		alias: String?,
+		commandTree: String,
+		args: Array<String>
+	): List<String> = subCommands[args.firstOrNull()]
+		?.onTabComplete(sender, command, alias, "$commandTree ${args[0]}", args.drop(1).toTypedArray())
+		?: onTabComplete(CommandAction(sender, args, commandTree))
+
 	override fun onTabComplete(
 		sender: CommandSender,
 		command: org.bukkit.command.Command?,
 		alias: String?,
 		args: Array<String>
-	): List<String> = subCommands[args.firstOrNull()]
-		?.onTabComplete(sender, command, alias, args.drop(1).toTypedArray())
-		?: onTabComplete(TabCompleteAction(sender, args.size, args.lastOrNull()))
+	): List<String> = onTabComplete(sender, command, alias, command!!.name, args)
+
+	fun onCommand(
+		sender: CommandSender,
+		command: org.bukkit.command.Command?,
+		label: String?,
+		commandTree: String,
+		args: Array<String>
+	): Boolean {
+		subCommands[args.firstOrNull()]
+			?.onCommand(sender, command, label, "$commandTree ${args[0]}", args.drop(1).toTypedArray())
+			?: onCommand(CommandAction(sender, args, commandTree))
+		return true
+	}
 
 	override fun onCommand(
 		sender: CommandSender,
 		command: org.bukkit.command.Command?,
 		label: String?,
 		args: Array<String>
-	): Boolean {
-		subCommands[args.firstOrNull()]
-			?.onCommand(sender, command, label, args.drop(1).toTypedArray())
-			?: onCommand(CommandAction(sender, args))
-		return true
-	}
+	) = onCommand(sender, command, label, command!!.name, args)
 
 	/**
 	 * Register the command
@@ -161,8 +179,9 @@ class Command : TabExecutor {
  *
  * @param sender The sender of this command
  * @param args The arguments of this command
+ * @param commandTree No idea how to explain this ¯\_(ツ)_/¯
  */
-class CommandAction(val sender: CommandSender, val args: Array<String>)
+class CommandAction(val sender: CommandSender, val args: Array<String>, val commandTree: String)
 
 /**
  * The action of a tab complete
