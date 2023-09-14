@@ -24,6 +24,12 @@ allprojects {
         testImplementation("io.mockk:mockk:1.13.7")
     }
 
+    java {
+        toolchain {
+            languageVersion.set(JavaLanguageVersion.of(17))
+        }
+    }
+
     val compileKotlin: KotlinCompile by tasks
     compileKotlin.kotlinOptions {
         jvmTarget = "17"
