@@ -106,9 +106,8 @@ class Command : TabExecutor {
 	 * @param aliases The aliases of this sub-command
 	 * @param command The sub-command
 	 */
-	fun addSubCommand(vararg aliases: String, command: Command.() -> Unit) = this.apply {
+	fun addSubCommand(vararg aliases: String, command: Command.() -> Unit) =
 		addSubCommand(Command().apply(command), *aliases)
-	}
 
 	fun sendSubCommandsUsage(sender: CommandSender) = run {
 		val seen = mutableListOf<Command>()
@@ -179,20 +178,8 @@ class Command : TabExecutor {
  *
  * @param sender The sender of this command
  * @param args The arguments of this command
- * @param commandTree No idea how to explain this ¯\_(ツ)_/¯
+ * @param commandTree The command tree to this command
  */
 class CommandAction(val sender: CommandSender, val args: Array<String>, val commandTree: String)
-
-/**
- * The action of a tab complete
- *
- * @param sender The sender of this command
- * @param index The index of current argument. If you
- *   request for suggestions when typing `/foo bar baz`,
- *   the index is 1
- * @param arg The current (last) agrument,
- *   `/foo bar baz` will be `baz`
- */
-class TabCompleteAction(val sender: CommandSender, val index: Int, val arg: String?)
 
 fun command(block: Command.() -> Unit) = Command().apply(block)
