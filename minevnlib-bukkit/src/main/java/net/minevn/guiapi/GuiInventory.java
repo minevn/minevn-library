@@ -8,6 +8,11 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
+
+import static net.minevn.libs.bukkit.MineVNLib.parseUIMap;
+import static net.minevn.libs.bukkit.MineVNLib.toSlotIds;
+
 public class GuiInventory implements InventoryHolder {
 	private Inventory inv;
 	private GuiItemStack[] actions;
@@ -26,18 +31,47 @@ public class GuiInventory implements InventoryHolder {
 	}
 
 	public void setItem(int slot, GuiItemStack item) {
-		if (slot >= inv.getSize())
-			return;
-		inv.setItem(slot, item != null ? item.getItem() : null);
-		actions[slot] = item;
+		if (slot < inv.getSize()) {
+			inv.setItem(slot, item != null ? item.getItem() : null);
+			actions[slot] = item;
+		}
+	}
+
+	public void setItem(int[] slots, GuiItemStack item) {
+		for (int i : slots) {
+			setItem(i, item);
+		}
+	}
+
+	public void setItem(GuiItemStack item, int... slots) {
+		setItem(slots, item);
+	}
+
+	public void setItem(String slotMap, GuiItemStack item) {
+		setItem(toSlotIds(parseUIMap(slotMap)), item);
+	}
+
+	/**
+	 *
+	 *
+	 * @param slotMap
+	 * @param item
+	 */
+	public void setItem(String[] slotMap, GuiItemStack item) {
+		setItem(toSlotIds(parseUIMap(slotMap)), item);
+	}
+
+	public void setItem(List<String> slotMap, GuiItemStack item) {
+		setItem(toSlotIds(parseUIMap(slotMap)), item);
 	}
 
 	public void onClick(InventoryClickEvent e) {
 		e.setCancelled(true);
 		if (!locked) {
 			GuiItemStack i = actions[e.getSlot()];
-			if (i != null)
+			if (i != null) {
 				i.onClick(e);
+			}
 		}
 	}
 
