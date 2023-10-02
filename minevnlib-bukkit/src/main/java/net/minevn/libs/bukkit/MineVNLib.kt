@@ -1,12 +1,13 @@
 package net.minevn.libs.bukkit
 
+import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.plugin.java.JavaPlugin
 
 class MineVNLib : JavaPlugin() {
     companion object {
 
         /**
-         * Parse a map of booleans from a string array, used for GUIAPI. Indicate slots to set the item.
+         * Parse a matrix of booleans from a string array, used for GUIAPI. Indicate slots to set the item.
          *
          * Example:
          * ```
@@ -47,15 +48,20 @@ class MineVNLib : JavaPlugin() {
 
 
         /**
-         * Convert a map of booleans to an array of slot ids.
+         * Convert a matrix of booleans to an array of slot ids.
          *
-         * @param slotMap The map of booleans
+         * @param slotMap The matrix of booleans
          */
         @JvmStatic
         fun toSlotIds(slotMap: Array<Array<Boolean>>) = slotMap
-            .mapIndexed { y, line -> line.mapIndexed { x, slot -> if (slot) y * 9 + x else -1 } }
+            .mapIndexed { y, line ->
+                line.mapIndexed { x, slot -> if (slot) y * 9 + x else -1 }
+            }
             .flatten()
             .filter { it != -1 }
             .toIntArray()
+
+        fun ConfigurationSection.getGuiFillSlots(path: String) =
+            toSlotIds(parseUIMap(getStringList(path)!!.toTypedArray()))
     }
 }
