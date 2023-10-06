@@ -20,12 +20,14 @@ class GuiIcon(
 
     fun toGuiItemStack(action: ClickAction?) = GuiItemStack(toItemStack()).apply { onClick(action) }
 
+    fun toGuiItemStack() = toGuiItemStack(null)
+
     fun clone() = GuiIcon(iconType, iconData, name, lores)
 
     companion object {
         @JvmStatic
         fun fromConfig(configSection: ConfigurationSection) : GuiIcon {
-            val iconType = XMaterial.matchXMaterial(configSection.getString("icon.type", "AIR"))
+            val iconType = XMaterial.matchXMaterial(configSection.getString("icon.type", "STONE"))
                 .orElse(XMaterial.STONE)
                 .parseMaterial()!!
             val iconData = configSection.getInt("icon.data", 0).toShort()
