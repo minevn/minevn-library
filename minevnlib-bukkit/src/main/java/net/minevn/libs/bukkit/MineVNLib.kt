@@ -1,10 +1,13 @@
 package net.minevn.libs.bukkit
 
+import net.minevn.guiapi.GuiListener
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.plugin.java.JavaPlugin
 
 class MineVNLib : JavaPlugin() {
     companion object {
+        lateinit var instance: MineVNLib
+            private set
 
         /**
          * Parse a matrix of booleans from a string array, used for GUIAPI. Indicate slots to set the item.
@@ -63,5 +66,10 @@ class MineVNLib : JavaPlugin() {
 
         fun ConfigurationSection.getGuiFillSlots(path: String) =
             toSlotIds(parseUIMap(getStringList(path)!!.toTypedArray()))
+    }
+
+    override fun onEnable() {
+        instance = this
+        GuiListener.init(this)
     }
 }

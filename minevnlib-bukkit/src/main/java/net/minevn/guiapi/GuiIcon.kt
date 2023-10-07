@@ -31,7 +31,7 @@ class GuiIcon(
                 .orElse(XMaterial.STONE)
                 .parseMaterial()!!
             val iconData = configSection.getInt("icon.data", 0).toShort()
-            val name = configSection.getString("name", "").color()
+            val name = configSection.getString("name", "&f").color()
             val lore = configSection.getStringList("lores").color()
             return GuiIcon(iconType, iconData, name, lore)
         }

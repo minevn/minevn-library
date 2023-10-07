@@ -5,11 +5,6 @@ plugins {
 dependencies {
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
-
-    // database
-    implementation("com.zaxxer:HikariCP:5.0.1")
-    implementation("org.flywaydb:flyway-core:9.22.0")
-    implementation("com.h2database:h2:2.1.214")
 }
 
 tasks {
