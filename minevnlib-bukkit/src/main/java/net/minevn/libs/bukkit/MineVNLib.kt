@@ -71,5 +71,6 @@ class MineVNLib : JavaPlugin() {
     override fun onEnable() {
         instance = this
         GuiListener.init(this)
+        EventListener()
     }
 }
