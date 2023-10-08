@@ -1,8 +1,11 @@
 package net.minevn.libs.bukkit.chat
 
 import net.minevn.libs.bukkit.data.PlayerData
+import org.bukkit.entity.Player
 
-class ChatListener(private val playerData: PlayerData, val fallback: ChatListenerMessage.() -> Unit) {
+class ChatListener(player: Player, val fallback: ChatListenerMessage.() -> Unit) {
+    private val playerData = PlayerData[player]!!
+
     init {
         playerData.chatListener = this
     }
