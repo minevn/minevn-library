@@ -17,6 +17,11 @@ allprojects {
     }
 
     dependencies {
+        // database
+        implementation("com.zaxxer:HikariCP:5.0.1")
+        implementation("org.flywaydb:flyway-core:9.22.0")
+        implementation("com.h2database:h2:2.1.214")
+
         // JUnit
         testImplementation(platform("org.junit:junit-bom:5.9.2"))
         testImplementation("org.junit.jupiter:junit-jupiter")
