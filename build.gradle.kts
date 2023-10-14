@@ -17,6 +17,9 @@ allprojects {
     }
 
     dependencies {
+        // libs
+        implementation("org.danilopianini:khttp:1.4.0")
+
         // database
         implementation("com.zaxxer:HikariCP:5.0.1")
         implementation("org.flywaydb:flyway-core:9.22.0")
@@ -47,5 +50,9 @@ allprojects {
     val compileTestKotlin: KotlinCompile by tasks
     compileTestKotlin.kotlinOptions {
         jvmTarget = "17"
+    }
+
+    configurations {
+        testImplementation.get().extendsFrom(compileOnly.get())
     }
 }
