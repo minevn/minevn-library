@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-library`
-    kotlin("jvm") version "1.8.21"
+    kotlin("jvm") version "1.9.10"
 }
 
 allprojects {
@@ -17,9 +17,6 @@ allprojects {
     }
 
     dependencies {
-        // libs
-        implementation("org.danilopianini:khttp:1.4.0")
-
         // database
         implementation("com.zaxxer:HikariCP:5.0.1")
         implementation("org.flywaydb:flyway-core:9.22.0")
