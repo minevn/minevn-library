@@ -171,6 +171,8 @@ class Command : TabExecutor {
 			plugin.logger.info("Registered command $command")
 		}
 	}
+
+	fun getSubCommands() = subCommands.toList()
 }
 
 /**
