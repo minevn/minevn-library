@@ -173,6 +173,8 @@ class Command : TabExecutor {
 	}
 
 	fun getSubCommands() = subCommands.toList()
+
+	fun getDescription() = description
 }
 
 /**
