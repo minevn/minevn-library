@@ -19,9 +19,10 @@ allprojects {
     dependencies {
         // database
         implementation("com.zaxxer:HikariCP:5.0.1")
-        implementation("org.flywaydb:flyway-core:10.0.0")
-        implementation("org.flywaydb:flyway-mysql:10.0.0")
         implementation("com.h2database:h2:2.1.214")
+
+        // gson
+        implementation("com.google.code.gson:gson:2.10.1")
 
         // JUnit
         testImplementation(platform("org.junit:junit-bom:5.9.2"))
