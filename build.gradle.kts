@@ -19,7 +19,8 @@ allprojects {
     dependencies {
         // database
         implementation("com.zaxxer:HikariCP:5.0.1")
-        implementation("org.flywaydb:flyway-core:9.22.0")
+        implementation("org.flywaydb:flyway-core:10.0.0")
+        implementation("org.flywaydb:flyway-mysql:10.0.0")
         implementation("com.h2database:h2:2.1.214")
 
         // JUnit
