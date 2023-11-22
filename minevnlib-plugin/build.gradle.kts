@@ -32,6 +32,7 @@ tasks {
         relocate("com.fasterxml.jackson", "net.minevn.libs.jackson")
         relocate("com.google.gson", "net.minevn.libs.gson")
         relocate("org.slf4j", "net.minevn.libs.slf4j")
+        exclude("META-INF/versions/21/org/h2/util/Utils21.class")
         archiveFileName.set("$jarName.jar")
     }
 

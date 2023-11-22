@@ -20,6 +20,7 @@ allprojects {
         // database
         implementation("com.zaxxer:HikariCP:5.0.1")
         implementation("com.h2database:h2:2.1.214")
+        implementation("org.mariadb.jdbc:mariadb-java-client:2.7.11") { exclude("*") }
 
         // gson
         implementation("com.google.code.gson:gson:2.10.1")
