@@ -7,4 +7,5 @@ repositories {
 
 dependencies {
     compileOnly("minevn.depend:paper:1.12.2-b1619-no-gson-jline")
+    compileOnly(project(":minevnlib-master"))
 }

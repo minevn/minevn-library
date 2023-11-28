@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(project(":minevnlib-master"))
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
 }

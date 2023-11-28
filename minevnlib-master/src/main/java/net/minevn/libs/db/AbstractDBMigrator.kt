@@ -4,7 +4,7 @@ import java.io.InputStream
 import java.sql.Connection
 
 @Suppress("SqlSourceToSinkFlow", "unused")
-class DBMigrator(
+abstract class AbstractDBMigrator(
     private val dbConnection: Connection,
     private val logger: (String) -> Unit,
     private val resourceFectcher: (String) -> InputStream?,
