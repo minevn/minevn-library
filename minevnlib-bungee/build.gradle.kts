@@ -3,6 +3,6 @@ repositories {
 }
 
 dependencies {
-    compileOnly("net.md-5:bungeecord-api:1.12-SNAPSHOT")
     compileOnly(project(":minevnlib-master"))
+    compileOnly("net.md-5:bungeecord-api:1.12-SNAPSHOT")
 }
