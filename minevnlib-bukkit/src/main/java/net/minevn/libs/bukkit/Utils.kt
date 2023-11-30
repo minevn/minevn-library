@@ -43,17 +43,21 @@ fun String.split(maxLength: Int) = mutableListOf<String>().apply {
             colorLength += 2
         }
 
-        if (char != ' ') {
+        if (!char.isWhitespace()) {
             return@forEachIndexed
         }
 
-        if (current!!.length - colorLength >= maxLength) {
-            val lastColor = if (isEmpty()) "" else ChatColor.getLastColors(last())
-            add("$lastColor${current.toString().trim()}")
+        if (char == '\n' || current!!.length - colorLength >= maxLength) {
+            addWithLastColor(current.toString())
             current = null
             colorLength = 0
         }
     }
 
-    current?.let { add(it.toString().trim()) }
+    current?.let { addWithLastColor(current.toString()) }
+}
+
+fun MutableList<String>.addWithLastColor(string: String) {
+    val lastColor = if (isEmpty()) "" else ChatColor.getLastColors(last())
+    add("$lastColor${string.trim()}")
 }

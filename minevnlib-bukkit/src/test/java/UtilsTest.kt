@@ -33,8 +33,9 @@ class UtilsTest {
 
     @Test
     fun testStringSplit() {
-        val text = "§f§lA very long text with §c§lcolor §f§lcode to be splitted. §aKeep last color from previous line. " +
-                "Convert color symbol to §cdouble S §abefore using this."
-        println(text.split(32))
+        ("§f§lA very long text with §c§lcolor §f§lcode to be\nsplitted. §aKeep last color from previous line. " +
+                "Convert color symbol to §cdouble S §abefore using this.")
+            .split(32)
+            .forEach { println(it) }
     }
 }
