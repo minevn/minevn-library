@@ -4,6 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
+import org.bukkit.Location
 import org.bukkit.entity.Player
 
 fun List<String>.color() = map { it.color() }
@@ -60,4 +61,16 @@ fun String.split(maxLength: Int) = mutableListOf<String>().apply {
 fun MutableList<String>.addWithLastColor(string: String) {
     val lastColor = if (isEmpty()) "" else ChatColor.getLastColors(last())
     add("$lastColor${string.trim()}")
+}
+
+fun Location.asString() = "${world.name},$x,$y,$z,$yaw,$pitch"
+
+fun String.asLocation() = split(",").let {
+    val world = Bukkit.getWorld(it[0])
+    val x = it[1].toDouble()
+    val y = it[2].toDouble()
+    val z = it[3].toDouble()
+    val yaw = it[4].toFloat()
+    val pitch = it[5].toFloat()
+    Location(world, x, y, z, yaw, pitch)
 }
