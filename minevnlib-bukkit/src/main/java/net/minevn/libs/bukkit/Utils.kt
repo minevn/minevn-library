@@ -66,7 +66,13 @@ fun MutableList<String>.addWithLastColor(string: String) {
 fun Location.asString() = "${world.name},$x,$y,$z,$yaw,$pitch"
 
 fun String.asLocation() = split(",").let {
-    val world = Bukkit.getWorld(it[0])
+    val world = Bukkit.getWorld(it[0]) ?: run {
+        val logger = MineVNLib.instance.logger
+        logger.warning("World not found: ${it[0]}")
+        logger.warning("Check following stacktrace to fix:")
+        Thread.dumpStack()
+        return@let null
+    }
     val x = it[1].toDouble()
     val y = it[2].toDouble()
     val z = it[3].toDouble()
