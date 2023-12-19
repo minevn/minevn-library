@@ -18,7 +18,7 @@ abstract class ConfiguredUI(
     companion object {
         private val configList = mutableMapOf<String, YamlConfiguration>()
 
-        fun getConfig(configPath: String, plugin: JavaPlugin) : YamlConfiguration {
+        fun getConfig(configPath: String, plugin: JavaPlugin): YamlConfiguration {
             if (!configList.containsKey(configPath)) {
                 val configFile = File(plugin.dataFolder, configPath)
                 if (!configFile.exists()) {

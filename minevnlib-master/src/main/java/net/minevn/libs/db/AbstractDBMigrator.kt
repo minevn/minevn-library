@@ -20,7 +20,7 @@ abstract class AbstractDBMigrator(
         return 0
     }
 
-    fun migrate(maxVersion: Int? = null) : Int {
+    fun migrate(maxVersion: Int? = null): Int {
         val latestVersion = maxVersion ?: getMaxVersion()
         if (currentVersion >= latestVersion) {
             logger("The schema is up to date.")

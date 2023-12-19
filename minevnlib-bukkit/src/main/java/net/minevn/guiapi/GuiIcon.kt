@@ -33,7 +33,7 @@ class GuiIcon(
 
     companion object {
         @JvmStatic
-        fun fromConfig(configSection: ConfigurationSection) : GuiIcon {
+        fun fromConfig(configSection: ConfigurationSection): GuiIcon {
             val iconType = XMaterial.matchXMaterial(configSection.getString("icon.type", "STONE"))
                 .orElse(XMaterial.STONE)
                 .parseMaterial()!!

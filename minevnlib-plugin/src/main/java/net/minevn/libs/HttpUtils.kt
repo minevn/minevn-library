@@ -16,7 +16,7 @@ fun http(
     headers: Map<String, String>? = null,
     setCookie: Map<String, String>? = null,
     getCookie: MutableMap<String, String>? = null,
-) : String {
+): String {
     val content = body ?: parameters?.map { it.key + "=" + it.value }?.joinToString("&") { it }
     val httpsCon = (URL(url).openConnection() as HttpURLConnection).apply {
         doOutput = true
