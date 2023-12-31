@@ -52,3 +52,7 @@ fun getWeekOfYear(time: Date) = getCalendar().run {
 class YearWeek(var year: Int, var week: Int) {
     override fun toString() = "${year}_w${week.toString().padStart(2, '0')}"
 }
+
+val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.forLanguageTag("en-150"))
+
+fun Long.timeToString() = dateFormat.format(Date(this))!!
