@@ -1,5 +1,8 @@
 package net.minevn.libs
 
+import java.time.YearMonth
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 private fun getCalendar() = Calendar.getInstance(Locale.forLanguageTag("en-150"))!!.apply {
@@ -56,3 +59,14 @@ class YearWeek(var year: Int, var week: Int) {
 val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.forLanguageTag("en-150"))
 
 fun Long.timeToString() = dateFormat.format(Date(this))!!
+
+fun minMaxEpochTimestamp(monthYear: String): Pair<Long, Long> {
+    val formatter = DateTimeFormatter.ofPattern("MM/yyyy")
+    val yearMonth = YearMonth.parse(monthYear, formatter)
+
+    val startOfMonth = yearMonth.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant().epochSecond
+    val endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59)
+        .atZone(ZoneId.systemDefault()).toInstant().epochSecond
+
+    return Pair(startOfMonth, endOfMonth)
+}
