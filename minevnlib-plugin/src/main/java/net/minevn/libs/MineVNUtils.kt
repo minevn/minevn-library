@@ -64,9 +64,9 @@ fun minMaxEpochTimestamp(monthYear: String): Pair<Long, Long> {
     val formatter = DateTimeFormatter.ofPattern("MM/yyyy")
     val yearMonth = YearMonth.parse(monthYear, formatter)
 
-    val startOfMonth = yearMonth.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant().epochSecond
+    val startOfMonth = yearMonth.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
     val endOfMonth = yearMonth.atEndOfMonth().atTime(23, 59, 59)
-        .atZone(ZoneId.systemDefault()).toInstant().epochSecond
+        .atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
     return Pair(startOfMonth, endOfMonth)
 }
