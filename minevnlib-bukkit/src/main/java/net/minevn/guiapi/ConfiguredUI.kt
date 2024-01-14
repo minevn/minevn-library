@@ -4,6 +4,7 @@ import net.minevn.libs.bukkit.color
 import net.minevn.libs.bukkit.runSync
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
+import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 
@@ -16,25 +17,26 @@ abstract class ConfiguredUI(
     getConfig(configPath, plugin).getString("name").color()
 ) {
     companion object {
-        private val configList = mutableMapOf<String, YamlConfiguration>()
+        private val configList = mutableMapOf<Plugin, MutableMap<String, YamlConfiguration>>()
 
         fun getConfig(configPath: String, plugin: JavaPlugin): YamlConfiguration {
-            if (!configList.containsKey(configPath)) {
+            val configsByPlugin = configList.getOrPut(plugin) { mutableMapOf() }
+            if (!configsByPlugin.containsKey(configPath)) {
                 val configFile = File(plugin.dataFolder, configPath)
                 if (!configFile.exists()) {
                     configFile.parentFile.mkdirs()
                     plugin.saveResource(configPath, false)
                 }
-                configList[configPath] = YamlConfiguration.loadConfiguration(configFile)
+                configsByPlugin[configPath] = YamlConfiguration.loadConfiguration(configFile)
             }
-            return configList[configPath]!!
+            return configsByPlugin[configPath]!!
         }
 
-        fun reloadConfig(configPath: String) {
-            configList.remove(configPath)
+        fun reloadConfig(plugin: JavaPlugin, configPath: String) {
+            configList[plugin]?.remove(configPath)
         }
 
-        fun reloadConfigs() = configList.clear()
+        fun reloadConfigs(plugin: JavaPlugin) = configList.remove(plugin)
     }
 
     fun getConfig() = getConfig(configPath, plugin)
