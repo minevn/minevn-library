@@ -1,11 +1,8 @@
 repositories {
-    maven {
-        setUrl("http://pack.minevn.net/repo/")
-        isAllowInsecureProtocol = true
-    }
+    maven("https://repo.papermc.io/repository/maven-public/")
 }
 
 dependencies {
     compileOnly(project(":minevnlib-master"))
-    compileOnly("minevn.depend:paper:1.12.2-b1619-no-gson-jline")
+    compileOnly("com.destroystokyo.paper:paper-api:1.12.2-R0.1-SNAPSHOT")
 }
