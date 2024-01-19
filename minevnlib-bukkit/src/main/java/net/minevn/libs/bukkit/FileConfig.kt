@@ -8,7 +8,11 @@ import java.nio.charset.StandardCharsets
 
 open class FileConfig(val plugin: JavaPlugin, val name: String) {
     private val file: File = File(plugin.dataFolder, "$name.yml")
-    protected lateinit var config: YamlConfiguration private set
+    lateinit var config: YamlConfiguration private set
+
+    /**
+     * Base config is the config file in the jar file
+     */
     lateinit var baseConfig: YamlConfiguration private set
 
     init {
