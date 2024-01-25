@@ -53,6 +53,8 @@ abstract class MineVNPlugin : JavaPlugin() {
      * @param config configuration
      */
     protected fun initDatabase(dbType: String, config: YamlConfiguration) {
+        dbConnection = null
+
         val logger: (String) -> Unit = this.logger::info
         val exceptionLogger: (Level, String, Throwable) -> Unit = this.logger::log
         val dbConfig = if (dbType == "mariadb") "mysql" else dbType
