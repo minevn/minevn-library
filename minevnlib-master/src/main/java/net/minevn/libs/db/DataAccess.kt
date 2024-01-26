@@ -1,6 +1,6 @@
 package net.minevn.libs.db
 
-import net.minevn.libs.db.connection.DatabaseConnection
+import net.minevn.libs.db.connection.DatabasePool
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -9,14 +9,15 @@ import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
 abstract class DataAccess {
-    lateinit var connection: DatabaseConnection
+    var txConnection: Connection? = null
+    lateinit var dbPool: DatabasePool
     var transactional = false
 
     /**
      * Initialize the PreparedStatement with the given SQL statement
      */
     protected fun <R> String.statement(action: PreparedStatement.() -> R) : R {
-        val dbConn = connection.getConnection()
+        val dbConn = txConnection ?: dbPool.getConnection()
         try {
             return dbConn.prepareStatement(this).use { it.action() }
         } finally {
@@ -29,7 +30,7 @@ abstract class DataAccess {
      * Initialize the PreparedStatement with the given SQL statement, with the option to return generated keys
      */
     protected fun <R> String.statementWithKey(action: PreparedStatement.() -> R) : R {
-        val dbConn = connection.getConnection()
+        val dbConn = txConnection ?: dbPool.getConnection()
         try {
             return dbConn.prepareStatement(this, Statement.RETURN_GENERATED_KEYS).use { it.action() }
         } finally {
@@ -60,18 +61,20 @@ abstract class DataAccess {
         fetch { generateSequence { if (next()) action() else null }.toList() }
 }
 
-class DataAccessPool(private val databaseConnection: DatabaseConnection) {
+class DataAccessPool(private val databaseConnection: DatabasePool) {
     private var instanceList = mutableMapOf<KClass<out DataAccess>, DataAccess>()
+    private var transactionalInstanceList = mutableMapOf<KClass<out DataAccess>, DataAccess>()
 
-    fun <T : DataAccess> getInstance(type: KClass<T>): T {
+    fun <T : DataAccess> getInstance(type: KClass<T>, transactional: Boolean): T {
+        val targetList = if (transactional) transactionalInstanceList else instanceList
         val dbType = databaseConnection.getTypeName()
-        var instance = instanceList[type]
+        var instance = targetList[type]
         if (instance == null) {
             val basePackage = type.java.`package`.name
             val daoClass = Class.forName("$basePackage.$dbType.${type.simpleName}Impl")
             instance = type.cast(daoClass.getDeclaredConstructor().newInstance())
-            instance.connection = databaseConnection
-            instanceList[type] = instance
+            instance.dbPool = databaseConnection
+            targetList[type] = instance
         }
         return type.cast(instance)
     }

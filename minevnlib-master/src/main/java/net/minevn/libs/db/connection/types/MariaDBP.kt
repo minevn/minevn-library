@@ -1,15 +1,15 @@
 package net.minevn.libs.db.connection.types
 
 import com.zaxxer.hikari.HikariDataSource
-import net.minevn.libs.db.connection.DatabaseConnection
+import net.minevn.libs.db.connection.DatabasePool
 import java.util.logging.Level
 
-class MariaDBC(
+class MariaDBP(
     val host: String, val port: Int, val database: String, val user: String, val password: String,
     logger: (String) -> Unit,
     exceptionLogger: (Level, String, Throwable) -> Unit,
     customDataSource: HikariDataSource?
-) : DatabaseConnection(logger, exceptionLogger) {
+) : DatabasePool(logger, exceptionLogger) {
     init {
         try {
             logger("Connecting to the database (MariaDB)...")

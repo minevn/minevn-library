@@ -3,12 +3,11 @@ package net.minevn.libs.bukkit
 import com.zaxxer.hikari.HikariDataSource
 import net.minevn.libs.db.DataAccess
 import net.minevn.libs.db.DataAccessPool
-import net.minevn.libs.db.connection.DatabaseConnection
-import net.minevn.libs.db.connection.types.H2DBC
-import net.minevn.libs.db.connection.types.MariaDBC
-import net.minevn.libs.db.connection.types.MyDBC
+import net.minevn.libs.db.connection.DatabasePool
+import net.minevn.libs.db.connection.types.H2DBP
+import net.minevn.libs.db.connection.types.MariaDBP
+import net.minevn.libs.db.connection.types.MyDBP
 import org.bukkit.configuration.ConfigurationSection
-import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Level
 import kotlin.reflect.KClass
@@ -19,7 +18,7 @@ abstract class MineVNPlugin : JavaPlugin() {
     /**
      * Database connection
      */
-    var dbConnection: DatabaseConnection? = null
+    var dbPool: DatabasePool? = null
         private set(value) {
             field?.disconnect()
             field = value
@@ -32,7 +31,8 @@ abstract class MineVNPlugin : JavaPlugin() {
      * @param type data access type
      * @return data access object
      */
-    fun <T : DataAccess> getDAO(type: KClass<T>) = daoPool!!.getInstance(type)
+    fun <T : DataAccess> getDAO(type: KClass<T>, transactional: Boolean = false) =
+        daoPool!!.getInstance(type, transactional)
 
     /**
      * Initialize the database connection
@@ -54,27 +54,27 @@ abstract class MineVNPlugin : JavaPlugin() {
      * @param config configuration
      */
     protected fun initDatabase(config: ConfigurationSection, customDataSource: HikariDataSource? = null) {
-        dbConnection = null
+        dbPool = null
         val dbType = config.getString("engine", "h2")
 
         val logger: (String) -> Unit = this.logger::info
         val exceptionLogger: (Level, String, Throwable) -> Unit = this.logger::log
         val prefix = if (dbType == "mariadb") "mysql" else dbType
 
-        dbConnection = when (dbType) {
+        dbPool = when (dbType) {
             "mysql", "mariadb" -> {
                 val host = config.getString("$prefix.host")
                 val port = config.getInt("$prefix.port")
                 val database = config.getString("$prefix.database")
                 val user = config.getString("$prefix.user")
                 val password = config.getString("$prefix.password")
-                if (dbType == "mysql") MyDBC(host, port, database, user, password, logger, exceptionLogger, customDataSource)
-                else MariaDBC(host, port, database, user, password, logger, exceptionLogger, customDataSource)
+                if (dbType == "mysql") MyDBP(host, port, database, user, password, logger, exceptionLogger, customDataSource)
+                else MariaDBP(host, port, database, user, password, logger, exceptionLogger, customDataSource)
             }
 
             "h2" -> {
                 val file = config.getString("$prefix.file")
-                H2DBC(dataFolder, file, logger, exceptionLogger, customDataSource)
+                H2DBP(dataFolder, file, logger, exceptionLogger, customDataSource)
             }
 
             else -> throw UnsupportedOperationException("invalid database type")

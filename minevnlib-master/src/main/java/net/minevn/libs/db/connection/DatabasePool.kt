@@ -1,11 +1,10 @@
 package net.minevn.libs.db.connection
 
 import com.zaxxer.hikari.HikariDataSource
-import java.sql.Connection
 import java.sql.SQLException
 import java.util.logging.Level
 
-abstract class DatabaseConnection(
+abstract class DatabasePool(
     val logger: (String) -> Unit,
     val exceptionLogger: (Level, String, Throwable) -> Unit
 ) {

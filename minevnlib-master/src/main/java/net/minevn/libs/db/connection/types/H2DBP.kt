@@ -1,17 +1,17 @@
 package net.minevn.libs.db.connection.types
 
 import com.zaxxer.hikari.HikariDataSource
-import net.minevn.libs.db.connection.DatabaseConnection
+import net.minevn.libs.db.connection.DatabasePool
 import java.io.File
 import java.util.logging.Level
 
-class H2DBC (
+class H2DBP (
     val folder: File,
     val fileName: String,
     logger: (String) -> Unit,
     exceptionLogger: (Level, String, Throwable) -> Unit,
     customDataSource: HikariDataSource?
-) : DatabaseConnection(logger, exceptionLogger) {
+) : DatabasePool(logger, exceptionLogger) {
 
     init {
         try {
