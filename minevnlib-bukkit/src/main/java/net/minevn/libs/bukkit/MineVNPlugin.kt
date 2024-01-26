@@ -6,6 +6,7 @@ import net.minevn.libs.db.connection.DatabaseConnection
 import net.minevn.libs.db.connection.types.H2DBC
 import net.minevn.libs.db.connection.types.MariaDBC
 import net.minevn.libs.db.connection.types.MyDBC
+import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Level
@@ -37,28 +38,26 @@ abstract class MineVNPlugin : JavaPlugin() {
      *
      * Sample configuration:
      * ```yaml
-     * database:
-     *   engine: h2
-     *   h2:
-     *     file: dotman
-     *   mysql:
-     *     host: localhost
-     *     port: 3306
-     *     user: 'root'
-     *     password: '123'
-     *     database: dotman
+     * engine: h2
+     * h2:
+     *   file: dotman
+     * mysql:
+     *   host: localhost
+     *   port: 3306
+     *   user: 'root'
+     *   password: '123'
+     *   database: dotman
      * ```
      *
      * @param dbType database type
      * @param config configuration
      */
-    protected fun initDatabase(dbType: String, config: YamlConfiguration) {
+    protected fun initDatabase(dbType: String, config: ConfigurationSection) {
         dbConnection = null
 
         val logger: (String) -> Unit = this.logger::info
         val exceptionLogger: (Level, String, Throwable) -> Unit = this.logger::log
-        val dbConfig = if (dbType == "mariadb") "mysql" else dbType
-        val prefix = "database.$dbConfig"
+        val prefix = if (dbType == "mariadb") "mysql" else dbType
 
         dbConnection = when (dbType) {
             "mysql", "mariadb" -> {
