@@ -52,8 +52,9 @@ abstract class MineVNPlugin : JavaPlugin() {
      * @param dbType database type
      * @param config configuration
      */
-    protected fun initDatabase(dbType: String, config: ConfigurationSection) {
+    protected fun initDatabase(config: ConfigurationSection) {
         dbConnection = null
+        val dbType = config.getString("engine", "h2")
 
         val logger: (String) -> Unit = this.logger::info
         val exceptionLogger: (Level, String, Throwable) -> Unit = this.logger::log
