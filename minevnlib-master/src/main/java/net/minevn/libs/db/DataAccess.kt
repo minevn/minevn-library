@@ -1,4 +1,4 @@
-package net.minevn.libs.bukkit.db
+package net.minevn.libs.db
 
 import net.minevn.libs.db.connection.DatabaseConnection
 import java.sql.Connection

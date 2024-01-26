@@ -1,8 +1,8 @@
 package net.minevn.libs.bukkit
 
 import com.zaxxer.hikari.HikariDataSource
-import net.minevn.libs.bukkit.db.DataAccess
-import net.minevn.libs.bukkit.db.DataAccessPool
+import net.minevn.libs.db.DataAccess
+import net.minevn.libs.db.DataAccessPool
 import net.minevn.libs.db.connection.DatabaseConnection
 import net.minevn.libs.db.connection.types.H2DBC
 import net.minevn.libs.db.connection.types.MariaDBC
