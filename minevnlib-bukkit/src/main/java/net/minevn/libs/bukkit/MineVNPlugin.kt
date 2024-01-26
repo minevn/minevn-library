@@ -1,5 +1,6 @@
 package net.minevn.libs.bukkit
 
+import com.zaxxer.hikari.HikariDataSource
 import net.minevn.libs.bukkit.db.DataAccess
 import net.minevn.libs.bukkit.db.DataAccessPool
 import net.minevn.libs.db.connection.DatabaseConnection
@@ -52,7 +53,7 @@ abstract class MineVNPlugin : JavaPlugin() {
      * @param dbType database type
      * @param config configuration
      */
-    protected fun initDatabase(config: ConfigurationSection) {
+    protected fun initDatabase(config: ConfigurationSection, customDataSource: HikariDataSource? = null) {
         dbConnection = null
         val dbType = config.getString("engine", "h2")
 
@@ -67,13 +68,13 @@ abstract class MineVNPlugin : JavaPlugin() {
                 val database = config.getString("$prefix.database")
                 val user = config.getString("$prefix.user")
                 val password = config.getString("$prefix.password")
-                if (dbType == "mysql") MyDBC(host, port, database, user, password, logger, exceptionLogger)
-                else MariaDBC(host, port, database, user, password, logger, exceptionLogger)
+                if (dbType == "mysql") MyDBC(host, port, database, user, password, logger, exceptionLogger, customDataSource)
+                else MariaDBC(host, port, database, user, password, logger, exceptionLogger, customDataSource)
             }
 
             "h2" -> {
                 val file = config.getString("$prefix.file")
-                H2DBC(dataFolder, file, logger, exceptionLogger)
+                H2DBC(dataFolder, file, logger, exceptionLogger, customDataSource)
             }
 
             else -> throw UnsupportedOperationException("invalid database type")

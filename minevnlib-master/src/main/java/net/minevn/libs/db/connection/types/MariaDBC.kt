@@ -5,20 +5,20 @@ import net.minevn.libs.db.connection.DatabaseConnection
 import java.util.logging.Level
 
 class MariaDBC(
-    host: String, port: Int, database: String, user: String, password: String,
+    val host: String, val port: Int, val database: String, val user: String, val password: String,
     logger: (String) -> Unit,
-    exceptionLogger: (Level, String, Throwable) -> Unit
+    exceptionLogger: (Level, String, Throwable) -> Unit,
+    customDataSource: HikariDataSource?
 ) : DatabaseConnection(logger, exceptionLogger) {
     init {
         try {
             logger("Connecting to the database (MariaDB)...")
 
-            dataSource = HikariDataSource().apply {
-                addDataSourceProperty("url", "jdbc:mariadb://$host:$port/$database")
-                dataSourceClassName = "org.mariadb.jdbc.MariaDbDataSource"
-                username = user
-                setPassword(password)
-                keepaliveTime = 60000L
+            dataSource = (customDataSource ?: getDefaultDataSource()).apply {
+                if (dataSourceClassName == null && jdbcUrl == null) {
+                    addDataSourceProperty("url", "jdbc:mariadb://$host:$port/$database")
+                    dataSourceClassName = "org.mariadb.jdbc.MariaDbDataSource"
+                }
             }
             connection = dataSource.connection
 
@@ -29,6 +29,11 @@ class MariaDBC(
         }
     }
 
+    fun getDefaultDataSource() = HikariDataSource().apply {
+        username = user
+        setPassword(password)
+        keepaliveTime = 60000L
+    }
 
     override fun getTypeName() = "mysql"
 }

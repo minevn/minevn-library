@@ -6,23 +6,23 @@ import java.io.File
 import java.util.logging.Level
 
 class H2DBC (
-    folder: File,
-    fileName: String,
+    val folder: File,
+    val fileName: String,
     logger: (String) -> Unit,
-    exceptionLogger: (Level, String, Throwable) -> Unit
+    exceptionLogger: (Level, String, Throwable) -> Unit,
+    customDataSource: HikariDataSource?
 ) : DatabaseConnection(logger, exceptionLogger) {
 
     init {
         try {
-            val file = File(folder, fileName)
             logger("Connecting to the database (H2)...")
 
-            dataSource = HikariDataSource().apply {
-                addDataSourceProperty("url", "jdbc:h2:${file.absolutePath}")
-                dataSourceClassName = "org.h2.jdbcx.JdbcDataSource"
-                username = ""
-                password = ""
-                keepaliveTime = 60000L
+            dataSource = (customDataSource ?: getDefaultDataSource()).apply {
+                if (dataSourceClassName == null && jdbcUrl == null) {
+                    val file = File(folder, fileName)
+                    addDataSourceProperty("url", "jdbc:h2:${file.absolutePath}")
+                    dataSourceClassName = "org.h2.jdbcx.JdbcDataSource"
+                }
             }
             connection = dataSource.connection
 
@@ -31,6 +31,12 @@ class H2DBC (
             exceptionLogger(Level.SEVERE, "Could not connect to the database", ex)
             throw ex
         }
+    }
+
+    fun getDefaultDataSource() = HikariDataSource().apply {
+        username = ""
+        password = ""
+        keepaliveTime = 60000L
     }
 
     override fun getTypeName() = "h2"
