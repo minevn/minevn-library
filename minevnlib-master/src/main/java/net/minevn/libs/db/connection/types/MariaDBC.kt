@@ -20,7 +20,6 @@ class MariaDBC(
                     dataSourceClassName = "org.mariadb.jdbc.MariaDbDataSource"
                 }
             }
-            connection = dataSource.connection
 
             logger("Connected to the database (MariaDB)")
         } catch (ex: Exception) {

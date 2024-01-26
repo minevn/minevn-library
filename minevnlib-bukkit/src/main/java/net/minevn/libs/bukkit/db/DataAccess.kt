@@ -9,20 +9,33 @@ import kotlin.reflect.KClass
 import kotlin.reflect.cast
 
 abstract class DataAccess {
-    lateinit var connection: Connection
+    lateinit var connection: DatabaseConnection
+    var transactional = false
 
     /**
      * Initialize the PreparedStatement with the given SQL statement
      */
-    protected fun <R> String.statement(action: PreparedStatement.() -> R) =
-        connection.prepareStatement(this).use { it.action() }
+    protected fun <R> String.statement(action: PreparedStatement.() -> R) : R {
+        val dbConn = connection.getConnection()
+        try {
+            return dbConn.prepareStatement(this).use { it.action() }
+        } finally {
+            if (!transactional) dbConn.close()
+        }
+    }
 
 
     /**
      * Initialize the PreparedStatement with the given SQL statement, with the option to return generated keys
      */
-    protected fun <R> String.statementWithKey(action: PreparedStatement.() -> R) =
-        connection.prepareStatement(this, Statement.RETURN_GENERATED_KEYS).use { it.action() }
+    protected fun <R> String.statementWithKey(action: PreparedStatement.() -> R) : R {
+        val dbConn = connection.getConnection()
+        try {
+            return dbConn.prepareStatement(this, Statement.RETURN_GENERATED_KEYS).use { it.action() }
+        } finally {
+            if (!transactional) dbConn.close()
+        }
+    }
 
     /**
      * Process the ResultSet
@@ -57,7 +70,7 @@ class DataAccessPool(private val databaseConnection: DatabaseConnection) {
             val basePackage = type.java.`package`.name
             val daoClass = Class.forName("$basePackage.$dbType.${type.simpleName}Impl")
             instance = type.cast(daoClass.getDeclaredConstructor().newInstance())
-            instance.connection = databaseConnection.connection
+            instance.connection = databaseConnection
             instanceList[type] = instance
         }
         return type.cast(instance)

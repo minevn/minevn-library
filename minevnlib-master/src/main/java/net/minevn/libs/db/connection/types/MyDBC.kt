@@ -20,7 +20,6 @@ class MyDBC(
                     jdbcUrl = "jdbc:mysql://$host:$port/$database"
                 }
             }
-            connection = dataSource.connection
 
             logger("Connected to the database (MySQL)")
         } catch (ex: Exception) {
