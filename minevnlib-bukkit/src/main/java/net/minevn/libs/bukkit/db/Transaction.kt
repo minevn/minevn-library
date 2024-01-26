@@ -18,6 +18,7 @@ fun transaction(plugin: MineVNPlugin, action: Transaction.() -> Unit) {
     val transaction = Transaction(plugin, connection)
     try {
         transaction.action()
+        connection.commit()
     } catch (ex: Exception) {
         connection.rollback()
         throw ex
