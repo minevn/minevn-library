@@ -1,4 +1,4 @@
-package net.minevn.libs.db.connection
+package net.minevn.libs.db.pool
 
 import com.zaxxer.hikari.HikariDataSource
 import java.sql.SQLException

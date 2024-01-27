@@ -3,10 +3,10 @@ package net.minevn.libs.bukkit
 import com.zaxxer.hikari.HikariDataSource
 import net.minevn.libs.db.DataAccess
 import net.minevn.libs.db.DataAccessPool
-import net.minevn.libs.db.connection.DatabasePool
-import net.minevn.libs.db.connection.types.H2DBP
-import net.minevn.libs.db.connection.types.MariaDBP
-import net.minevn.libs.db.connection.types.MyDBP
+import net.minevn.libs.db.pool.DatabasePool
+import net.minevn.libs.db.pool.types.H2DBP
+import net.minevn.libs.db.pool.types.MariaDBP
+import net.minevn.libs.db.pool.types.MyDBP
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.plugin.java.JavaPlugin
 import java.util.logging.Level
@@ -31,8 +31,8 @@ abstract class MineVNPlugin : JavaPlugin() {
      * @param type data access type
      * @return data access object
      */
-    fun <T : DataAccess> getDAO(type: KClass<T>, transactional: Boolean = false) =
-        daoPool!!.getInstance(type, transactional)
+    fun <T : DataAccess> getDAO(type: KClass<T>) =
+        daoPool!!.getInstance(type)
 
     /**
      * Initialize the database connection

@@ -1,7 +1,7 @@
-package net.minevn.libs.db.connection.types
+package net.minevn.libs.db.pool.types
 
 import com.zaxxer.hikari.HikariDataSource
-import net.minevn.libs.db.connection.DatabasePool
+import net.minevn.libs.db.pool.DatabasePool
 import java.io.File
 import java.util.logging.Level
 
