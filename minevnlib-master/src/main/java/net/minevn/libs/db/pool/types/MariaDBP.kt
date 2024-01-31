@@ -30,7 +30,7 @@ class MariaDBP(
 
     fun getDefaultDataSource() = HikariDataSource().apply {
         username = user
-        setPassword(password)
+        password = this@MariaDBP.password
         keepaliveTime = 60000L
     }
 
