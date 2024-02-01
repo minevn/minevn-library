@@ -15,9 +15,12 @@ abstract class DatabasePool(
     abstract fun getTypeName(): String
 
     fun disconnect() {
-        logger("Disconnecting from the ${getTypeName()} database...")
         try {
-            if (::dataSource.isInitialized) dataSource.close()
+            if (::dataSource.isInitialized) {
+                logger("Disconnecting from the ${getTypeName()} database...")
+                dataSource.close()
+                logger("Disconnected from the ${getTypeName()} database")
+            }
         } catch (ex: SQLException) {
             exceptionLogger(Level.SEVERE, "Could not disconnect from the database", ex)
         }
