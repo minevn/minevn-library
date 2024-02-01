@@ -24,6 +24,7 @@ class H2DBP (
                     dataSourceClassName = "org.h2.jdbcx.JdbcDataSource"
                 }
             }
+            dataSource.connection.close()
 
             logger("Connected to the database (H2)")
         } catch (ex: Exception) {

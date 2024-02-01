@@ -14,6 +14,8 @@ abstract class DatabasePool(
 
     abstract fun getTypeName(): String
 
+    override fun toString() = dataSource.toString()
+
     fun disconnect() {
         try {
             if (::dataSource.isInitialized) {
