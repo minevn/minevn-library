@@ -4,7 +4,7 @@ import java.sql.Connection
 
 class Transaction(val connection: Connection)
 
-val currentTransaction = ThreadLocal<Transaction>()
+private val currentTransaction = ThreadLocal<Transaction>()
 
 fun getTransaction(): Transaction? = currentTransaction.get()
 
