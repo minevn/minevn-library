@@ -74,7 +74,7 @@ initDatabase(config.getConfigurationSection("database"))
 
 Giả sử bạn chỉ muốn plugin hỗ trợ H2 và chưa làm thêm MariaDB, MySQL thì hãy kiểm tra config `engine` trước khi kết nối.
 
-Hãy xem [code tham khảo](https://github.com/minevn/dotman/blob/master/dotman-plugin/src/main/java/net/minevn/dotman/DotMan.kt#L74).
+Hãy xem [code tham khảo](https://github.com/minevn/dotman/blob/master/dotman-plugin/src/main/java/net/minevn/dotman/DotMan.kt#L64).
 
 ### Tương tác với database
 Trước tiên hãy tìm hiểu về khái niệm [Data Access Object (DAO)](https://gpcoder.com/4935-huong-dan-java-design-pattern-dao/).
