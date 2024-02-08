@@ -83,7 +83,7 @@ Bạn sẽ đặt các class DAO như sau:
 
 ![sample](https://i.imgur.com/IA345j6.png)
 
-Bên trong các `DAOImpl`, Có thể thi câu lệnh SQL theo lối viết DSL:
+Bên trong các `DAOImpl`, thực thi câu lệnh SQL theo lối viết DSL:
 ```kotlin
 fun getPlayers(groupId: Int) : List<MyPlayer> {
     return "SELECT * FROM PLAYERS WHERE GROUP_ID = ?".statement {
