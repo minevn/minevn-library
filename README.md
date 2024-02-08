@@ -105,7 +105,7 @@ Từ đây bạn có thể lấy instance của các DAO qua hàm `plugin.getDAO
 Tham khảo code mẫu tại [đây](https://github.com/minevn/dotman/tree/master/dotman-plugin/src/main/java/net/minevn/dotman/database).
 
 ### Đánh version cho Database
-Còn được gọi là Schema versioning/migraion.
+Còn được gọi là Schema versioning/migration.
 
 Thông thường thì khi chạy plugin lần đầu, nó sẽ tạo một số bảng cần thiết, và sau này sẽ còn cập nhật thêm bảng mới, cột mới cho các bảng nữa.
 
