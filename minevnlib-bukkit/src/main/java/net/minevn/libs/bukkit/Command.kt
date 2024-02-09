@@ -9,7 +9,7 @@ class Command : TabExecutor {
     private var usage: String = ""
     private val subCommands = mutableMapOf<String, Command>()
     private var onCommand: CommandAction.() -> Unit = {
-        sendSubCommandsUsage(sender) ?: run {
+        sendSubCommandsUsage(sender, commandTree) ?: run {
             sender.sendMessage("Command action not set.")
         }
     }
@@ -109,16 +109,14 @@ class Command : TabExecutor {
     fun addSubCommand(vararg aliases: String, command: Command.() -> Unit) =
         addSubCommand(Command().apply(command), *aliases)
 
-    fun sendSubCommandsUsage(sender: CommandSender) = run {
-        val seen = mutableListOf<Command>()
-        subCommands.takeIf { it.isNotEmpty() }?.forEach {
-            val cmd = it.value
-            if (seen.contains(cmd)) return@forEach
-            seen.add(cmd)
-            val name = it.key
-            sender.sendMessage("§e$name $usage - $description")
+
+    fun sendSubCommandsUsage(sender: CommandSender, commandTree: String) = getSubCommands()
+        .distinctBy { it.second }
+        .filter { it.second.getDescription() != null }
+        .takeIf { it.isNotEmpty() }
+        ?.forEach {
+            sender.sendMessage("§a/$commandTree ${it.first} §7- ${it.second.getDescription()}")
         }
-    }
 
     fun onTabComplete(
         sender: CommandSender,

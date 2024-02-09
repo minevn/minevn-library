@@ -1,11 +1,25 @@
 plugins {
     id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("maven-publish")
 }
 
 dependencies {
     implementation(project(":minevnlib-master"))
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            artifact(tasks.shadowJar.get().archiveFile)
+        }
+    }
+    repositories {
+        maven {
+            url = uri("${System.getProperty("user.home")}/.m2/repository")
+        }
+    }
 }
 
 tasks {
