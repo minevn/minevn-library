@@ -17,7 +17,13 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("${System.getProperty("user.home")}/.m2/repository")
+            val mavenPath = project.properties["mavenPath"]
+            url = if (mavenPath != null) {
+                println("install to: $mavenPath")
+                uri(mavenPath)
+            } else {
+                uri("${System.getProperty("user.home")}/.m2/repository")
+            }
         }
     }
 }
