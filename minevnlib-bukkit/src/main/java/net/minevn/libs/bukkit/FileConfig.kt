@@ -27,6 +27,7 @@ open class FileConfig(val plugin: JavaPlugin, val name: String) {
         config = YamlConfiguration.loadConfiguration(file)
         plugin.getResource("$name.yml").use {
             baseConfig = YamlConfiguration.loadConfiguration(InputStreamReader(it, StandardCharsets.UTF_8))
+            config.addDefaults(baseConfig)
         }
     }
 
