@@ -57,10 +57,8 @@ class MineVNLib : JavaPlugin() {
          */
         @JvmStatic
         fun toSlotIds(slotMap: Array<Array<Boolean>>) = slotMap
-            .mapIndexed { y, line ->
-                line.mapIndexed { x, slot -> if (slot) y * 9 + x else -1 }
-            }
             .flatten()
+            .mapIndexed { index, isSlot -> if (isSlot) index else -1  }
             .filter { it != -1 }
             .toIntArray()
 
