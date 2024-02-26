@@ -1,5 +1,8 @@
 name: Build
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -27,3 +30,11 @@ jobs:
         with:
           name: "MineVNLib-${{ steps.version.outputs.version }}"
           path: ./target/MineVNLib.jar
+      - name: Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${{ steps.version.outputs.version }}"
+          prerelease: false
+          title: "MineVNLib ${{ steps.version.outputs.version }}"
+          files: ./target/MineVNLib.jar
