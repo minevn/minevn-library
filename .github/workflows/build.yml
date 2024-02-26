@@ -1,0 +1,28 @@
+name: Build
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/wrapper-validation-action@v1
+      - uses: actions/setup-java@v4.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: "gradle"
+      - name: Get version
+        run: |
+          echo "::set-output name=version::$(awk '/version =/ {gsub("\"", "", $NF); print $NF}' build.gradle.kts | sed 's/[[:space:]]//g')"
+        id: version
+      - name: Build DotMan
+        run: |
+          ./gradlew assemble
+          mkdir -p target
+          cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: "MineVNLib-${{ steps.version.outputs.version }}"
+          path: ./target/MineVNLib.jar
