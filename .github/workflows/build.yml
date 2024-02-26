@@ -18,6 +18,7 @@ jobs:
         id: version
       - name: Build DotMan
         run: |
+          chmod +x ./gradlew
           ./gradlew assemble
           mkdir -p target
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
