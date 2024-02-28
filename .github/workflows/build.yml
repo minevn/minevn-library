@@ -30,7 +30,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "${GITHUB_SHA}"
+          automatic_release_tag: ${{ github.sha }}
           prerelease: true
-          title: "MineVNLib - ${GITHUB_SHA}"
+          title: "MineVNLib - ${{ github.sha }}"
           files: ./target/MineVNLib.jar
