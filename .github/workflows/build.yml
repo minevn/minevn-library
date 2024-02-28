@@ -15,7 +15,7 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: "gradle"
-      - name: Get version
+      - name: Get commit sha
         run: |
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
         id: version
