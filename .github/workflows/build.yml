@@ -15,6 +15,10 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: "gradle"
+      - name: Get version
+        run: |
+          echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
+        id: version
       - name: Build ML
         run: |
           chmod +x ./gradlew
@@ -30,7 +34,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ github.sha }}
+          automatic_release_tag: ${{ steps.version.outputs.hash }}
           prerelease: true
-          title: "MineVNLib - ${{ github.sha }}"
+          title: "MineVNLib - ${{ steps.version.outputs.hash }}"
           files: ./target/MineVNLib.jar
