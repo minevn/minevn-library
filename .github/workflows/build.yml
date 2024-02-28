@@ -15,7 +15,11 @@ jobs:
       - name: Get commit sha
         run: |
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
-        id: version
+        id: git
+      - name: Get version
+        run: |
+          echo "::set-output name=version::$(awk '/version =/ {gsub("\"", "", $NF); print $NF}' build.gradle.kts | sed 's/[[:space:]]//g')"
+        id: mcversion
       - name: Build MineVNLib
         run: |
           chmod +x ./gradlew
@@ -31,7 +35,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ steps.version.outputs.hash }}
+          automatic_release_tag: ${{ steps.mcversion.outputs.version }}-${{ steps.git.outputs.hash }}
           prerelease: true
-          title: "MineVNLib - ${{ steps.version.outputs.hash }}"
+          title: "MineVNLib - ${{ steps.git.outputs.hash }}"
           files: ./target/MineVNLib.jar
