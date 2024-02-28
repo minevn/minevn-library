@@ -1,0 +1,36 @@
+name: Build
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/wrapper-validation-action@v1
+      - uses: actions/setup-java@v4.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: "gradle"
+      - name: Build ML
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assemble
+          mkdir -p target
+          cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: "MineVNLib"
+          path: ./target/MineVNLib.jar
+      - name: Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+          with:
+            repo_token: "${{ secrets.GITHUB_TOKEN }}"
+            automatic_release_tag: "${GITHUB_SHA}"
+            prerelease: true
+            title: "MineVNLib - ${GITHUB_SHA}"
+            files: ./target/MineVNLib.jar
