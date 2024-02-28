@@ -28,9 +28,9 @@ jobs:
           path: ./target/MineVNLib.jar
       - name: Release
         uses: "marvinpinto/action-automatic-releases@latest"
-          with:
-            repo_token: "${{ secrets.GITHUB_TOKEN }}"
-            automatic_release_tag: "${GITHUB_SHA}"
-            prerelease: true
-            title: "MineVNLib - ${GITHUB_SHA}"
-            files: ./target/MineVNLib.jar
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "${GITHUB_SHA}"
+          prerelease: true
+          title: "MineVNLib - ${GITHUB_SHA}"
+          files: ./target/MineVNLib.jar
