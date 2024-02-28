@@ -19,7 +19,7 @@ jobs:
         run: |
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
         id: version
-      - name: Build ML
+      - name: Build MineVNLib
         run: |
           chmod +x ./gradlew
           ./gradlew assemble
