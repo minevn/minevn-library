@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.TaskAction
 
 plugins {
     `java-library`
@@ -35,6 +37,12 @@ allprojects {
     tasks {
         test {
             useJUnitPlatform()
+        }
+    }
+
+    task("printVersion") {
+        doLast {
+            println("${project.version}")
         }
     }
 

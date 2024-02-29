@@ -20,16 +20,16 @@ jobs:
         run: |
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
         id: git
-      - name: Get version
-        run: |
-          echo "::set-output name=version::$(awk '/version =/ {gsub("\"", "", $NF); print $NF}' build.gradle.kts | sed 's/[[:space:]]//g')"
-        id: mcversion
       - name: Build MineVNLib
         run: |
           chmod +x ./gradlew
           ./gradlew assemble
           mkdir -p target
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
+      - name: Get version
+        run: |
+          echo "::set-output name=version::$(./gradlew printVersion | grep "> Task :printVersion" | awk '{print $NF}')"
+        id: mcversion
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.3.1
         with:
