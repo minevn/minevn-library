@@ -16,7 +16,7 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: "gradle"
-      - name: Get commit sha
+      - name: Get commit sha & plugin version
         run: |
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
           echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
