@@ -28,7 +28,7 @@ jobs:
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
       - name: Get version
         run: |
-          echo "::set-output name=version::$(./gradlew printVersion | grep "> Task :printVersion" | awk '{print $NF}')"
+          echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==2')"
         id: mcversion
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.3.1
