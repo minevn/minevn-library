@@ -38,12 +38,13 @@ allprojects {
         test {
             useJUnitPlatform()
         }
-    }
 
-    task("printVersion") {
-        doLast {
-            println("${project.version}")
+        register("printVersion") {
+            doLast {
+                println("${project.version}")
+            }
         }
+  
     }
 
     java {
