@@ -20,13 +20,14 @@ jobs:
         run: |
           chmod +x ./gradlew
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
-          echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
         id: env
       - name: Build MineVNLib
         run: |
           ./gradlew assemble
+          echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
           mkdir -p target
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
+        id: plugin
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.3.1
         with:
@@ -37,7 +38,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: ${{ steps.env.outputs.version }}-${{ steps.env.outputs.hash }}
+          automatic_release_tag: ${{ steps.plugin.outputs.version }}-${{ steps.env.outputs.hash }}
           prerelease: true
-          title: "MineVNLib - ${{ steps.env.outputs.version }}-${{ steps.env.outputs.hash }}"
+          title: "MineVNLib - ${{ steps.plugin.outputs.version }}-${{ steps.env.outputs.hash }}"
           files: ./target/MineVNLib.jar
