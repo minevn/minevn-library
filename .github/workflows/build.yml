@@ -18,12 +18,12 @@ jobs:
           cache: "gradle"
       - name: Get commit sha & plugin version
         run: |
+          chmod +x ./gradlew
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
           echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
         id: env
       - name: Build MineVNLib
         run: |
-          chmod +x ./gradlew
           ./gradlew assemble
           mkdir -p target
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
