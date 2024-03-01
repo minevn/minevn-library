@@ -16,12 +16,12 @@ jobs:
           distribution: temurin
           java-version: 17
           cache: "gradle"
-      - name: Get commit sha & plugin version
+      - name: Get commit sha
         run: |
           chmod +x ./gradlew
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
         id: env
-      - name: Build MineVNLib
+      - name: Build MineVNLib & get plugin version
         run: |
           ./gradlew assemble
           echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
