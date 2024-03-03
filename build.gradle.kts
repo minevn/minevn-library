@@ -36,6 +36,13 @@ allprojects {
         test {
             useJUnitPlatform()
         }
+
+        register("printVersion") {
+            doLast {
+                println("${project.version}")
+            }
+        }
+  
     }
 
     java {

@@ -1,0 +1,41 @@
+name: Build
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    if: (github.event_name == 'pull_request' && github.event.action == 'labeled') || github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: gradle/wrapper-validation-action@v1
+      - uses: actions/setup-java@v4.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: "gradle"
+      - name: Build MineVNLib & get plugin informations
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assemble
+          mkdir -p target
+          cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
+          echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
+          echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
+        id: plugin
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4.3.1
+        with:
+          name: "MineVNLib"
+          path: ./target/MineVNLib.jar
+      - name: Release
+        if: github.ref_name == 'master'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: ${{ steps.plugin.outputs.version }}-${{ steps.plugin.outputs.hash }}
+          prerelease: true
+          title: "MineVNLib - ${{ steps.plugin.outputs.version }}-${{ steps.plugin.outputs.hash }}"
+          files: ./target/MineVNLib.jar
