@@ -22,27 +22,27 @@ abstract class AbstractDBMigrator(
 
     fun migrate(maxVersion: Int? = null): Int {
         val latestVersion = maxVersion ?: getMaxVersion()
+        logger("Current schema version: $currentVersion")
         if (currentVersion >= latestVersion) {
             logger("The schema is up to date.")
-            return latestVersion
+            return currentVersion
         }
-        ((currentVersion + 1)..latestVersion).forEach { versionNum ->
-            val version = versionNum.toString().padStart(4, '0')
-            val path = "$sqlPath/$version.sql"
-            val stream = resourceFectcher(path) ?: throw IllegalStateException("File not found: $path")
-            stream.bufferedReader().use { file ->
-                logger("Updating schema to version $version...")
-                val sql = file.readText()
-                dbConnection.createStatement().use { stm ->
-                    sql.split(";")
+        dbConnection.createStatement().use { stm ->
+            ((currentVersion + 1)..latestVersion).forEach { versionNum ->
+                val version = versionNum.toString().padStart(4, '0')
+                val path = "$sqlPath/$version.sql"
+                val stream = resourceFectcher(path) ?: throw IllegalStateException("File not found: $path") // should not happen
+                stream.bufferedReader().use { file ->
+                    file.readText()
+                        .split(";")
                         .map { it.trim() }
                         .filter { it.isNotBlank() }
                         .forEach { stm.addBatch(it) }
-                    stm.executeBatch()
+                    }
                 }
-            }
+            stm.executeBatch()
         }
-        logger("Updating schema successfully.")
+        logger("Schema updated to version $latestVersion successfully.")
         return latestVersion
     }
 }
