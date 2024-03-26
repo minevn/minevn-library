@@ -22,6 +22,7 @@ jobs:
           ./gradlew assemble
           mkdir -p target
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
+          cp ./minevnlib-plugin/build/libs/MineVNLib-no-kotlin.jar ./target/MineVNLib-no-kotlin.jar
           echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
           echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
         id: plugin
@@ -29,7 +30,7 @@ jobs:
         uses: actions/upload-artifact@v4.3.1
         with:
           name: "MineVNLib"
-          path: ./target/MineVNLib.jar
+          path: ./target/*.jar
       - name: Release
         if: github.ref_name == 'master'
         uses: "marvinpinto/action-automatic-releases@latest"
@@ -38,4 +39,4 @@ jobs:
           automatic_release_tag: ${{ steps.plugin.outputs.version }}-${{ steps.plugin.outputs.hash }}
           prerelease: true
           title: "MineVNLib - ${{ steps.plugin.outputs.version }}-${{ steps.plugin.outputs.hash }}"
-          files: ./target/MineVNLib.jar
+          files: ./target/*.jar
