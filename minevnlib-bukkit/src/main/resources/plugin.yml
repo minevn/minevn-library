@@ -2,3 +2,4 @@ name: MineVNLib
 author: MineVN
 main: net.minevn.libs.bukkit.MineVNLib
 version: 1.0
+softdepend: [eco]
