@@ -4,6 +4,7 @@ import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
+import java.net.Proxy
 import java.net.URL
 import kotlin.streams.asSequence
 
@@ -16,9 +17,10 @@ fun http(
     headers: Map<String, String>? = null,
     setCookie: Map<String, String>? = null,
     getCookie: MutableMap<String, String>? = null,
+    proxy: Proxy? = null,
 ): String {
     val content = body ?: parameters?.map { it.key + "=" + it.value }?.joinToString("&") { it }
-    val httpsCon = (URL(url).openConnection() as HttpURLConnection).apply {
+    val httpsCon = (URL(url).run { proxy?.let { openConnection(it) } ?: openConnection() } as HttpURLConnection).apply {
         doOutput = true
         doInput = true
         instanceFollowRedirects = false
@@ -71,7 +73,8 @@ fun get(
     headers: Map<String, String>? = null,
     setCookie: Map<String, String>? = null,
     getCookie: MutableMap<String, String>? = null,
-) = http(url, "GET", contentType, body, parameters, headers, setCookie, getCookie)
+    proxy: Proxy? = null,
+) = http(url, "GET", contentType, body, parameters, headers, setCookie, getCookie, proxy)
 
 fun post(
     url: String,
@@ -81,4 +84,5 @@ fun post(
     headers: Map<String, String>? = null,
     setCookie: Map<String, String>? = null,
     getCookie: MutableMap<String, String>? = null,
-) = http(url, "POST", contentType, body, parameters, headers, setCookie, getCookie)
+    proxy: Proxy? = null,
+) = http(url, "POST", contentType, body, parameters, headers, setCookie, getCookie, proxy)
