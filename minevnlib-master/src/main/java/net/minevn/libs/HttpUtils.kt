@@ -1,6 +1,7 @@
 package net.minevn.libs
 
 import java.io.BufferedReader
+import java.io.ByteArrayInputStream
 import java.io.DataOutputStream
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -28,7 +29,7 @@ fun http(
         setRequestProperty("Content-Type", contentType)
         setRequestProperty("charset", "utf-8")
         if (content != null) {
-            setRequestProperty("Content-Length", content.byteInputStream().readAllBytes().size.toString())
+            setRequestProperty("Content-Length", ByteArrayInputStream(content.toByteArray()).readBytes().size.toString())
         }
         headers?.forEach { (k, v) ->
             setRequestProperty(k, v)
@@ -43,7 +44,7 @@ fun http(
 
     if (content != null) {
         DataOutputStream(httpsCon.outputStream).apply {
-            write(content.byteInputStream().readAllBytes())
+            write(ByteArrayInputStream(content.toByteArray()).readBytes())
             close()
         }
     }
