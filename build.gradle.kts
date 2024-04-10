@@ -2,12 +2,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-library`
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
 }
 
 allprojects {
     group = "net.minevn"
-    version = "1.0.3"
+    version = "1.0.4"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -19,7 +19,7 @@ allprojects {
 
     dependencies {
         // database
-        implementation("com.zaxxer:HikariCP:5.1.0")
+        implementation("com.zaxxer:HikariCP:4.0.3")
         implementation("com.h2database:h2:2.1.214")
         implementation("org.mariadb.jdbc:mariadb-java-client:2.7.11") { exclude("*") }
 
@@ -47,17 +47,17 @@ allprojects {
 
     java {
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
+            languageVersion.set(JavaLanguageVersion.of(8))
         }
     }
 
     val compileKotlin: KotlinCompile by tasks
     compileKotlin.kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
     val compileTestKotlin: KotlinCompile by tasks
     compileTestKotlin.kotlinOptions {
-        jvmTarget = "17"
+        jvmTarget = "1.8"
     }
 
     configurations {
