@@ -1,9 +1,6 @@
 package net.minevn.libs
 
-import java.io.BufferedReader
-import java.io.ByteArrayInputStream
-import java.io.DataOutputStream
-import java.io.InputStreamReader
+import java.io.*
 import java.net.HttpURLConnection
 import java.net.Proxy
 import java.net.URL
@@ -19,14 +16,20 @@ fun http(
     setCookie: Map<String, String>? = null,
     getCookie: MutableMap<String, String>? = null,
     proxy: Proxy? = null,
+    isMultipart: Boolean = false
 ): String {
+    val boundary = "===" + System.currentTimeMillis() + "==="
     val content = body ?: parameters?.map { it.key + "=" + it.value }?.joinToString("&") { it }
     val httpsCon = (URL(url).run { proxy?.let { openConnection(it) } ?: openConnection() } as HttpURLConnection).apply {
         doOutput = true
         doInput = true
         instanceFollowRedirects = false
         requestMethod = method
-        setRequestProperty("Content-Type", contentType)
+        if (isMultipart) {
+            setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+        } else {
+            setRequestProperty("Content-Type", contentType)
+        }
         setRequestProperty("charset", "utf-8")
         if (content != null) {
             setRequestProperty("Content-Length", ByteArrayInputStream(content.toByteArray()).readBytes().size.toString())
@@ -42,7 +45,18 @@ fun http(
         connect()
     }
 
-    if (content != null) {
+    if (isMultipart) {
+        OutputStreamWriter(httpsCon.outputStream).apply {
+            parameters!!.forEach { (key, value) ->
+                write("--$boundary\r\n")
+                write("Content-Disposition: form-data; name=\"$key\"\r\n\r\n")
+                write("$value\r\n")
+            }
+            write("--$boundary--\r\n")
+            flush()
+            close()
+        }
+    } else if (content != null) {
         DataOutputStream(httpsCon.outputStream).apply {
             write(ByteArrayInputStream(content.toByteArray()).readBytes())
             close()
@@ -75,7 +89,8 @@ fun get(
     setCookie: Map<String, String>? = null,
     getCookie: MutableMap<String, String>? = null,
     proxy: Proxy? = null,
-) = http(url, "GET", contentType, body, parameters, headers, setCookie, getCookie, proxy)
+    isMultipart: Boolean = false
+) = http(url, "GET", contentType, body, parameters, headers, setCookie, getCookie, proxy, isMultipart)
 
 fun post(
     url: String,
@@ -86,4 +101,5 @@ fun post(
     setCookie: Map<String, String>? = null,
     getCookie: MutableMap<String, String>? = null,
     proxy: Proxy? = null,
-) = http(url, "POST", contentType, body, parameters, headers, setCookie, getCookie, proxy)
+    isMultipart: Boolean = false
+) = http(url, "POST", contentType, body, parameters, headers, setCookie, getCookie, proxy, isMultipart)
