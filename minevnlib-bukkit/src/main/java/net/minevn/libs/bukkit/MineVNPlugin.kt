@@ -22,7 +22,7 @@ abstract class MineVNPlugin : JavaPlugin() {
         private set(value) {
             field?.disconnect()
             field = value
-            daoPool = if (value != null) DataAccessPool(value) else null
+            daoPool = if (value != null) DataAccessPool(value, classLoader) else null
         }
 
     /**
