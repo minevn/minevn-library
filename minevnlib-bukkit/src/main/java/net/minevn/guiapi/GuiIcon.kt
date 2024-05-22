@@ -2,20 +2,22 @@ package net.minevn.guiapi
 
 import com.cryptomorin.xseries.XMaterial
 import net.minevn.libs.bukkit.color
-import org.bukkit.Material
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 
 class GuiIcon(
-    var iconType: Material,
+    var iconItem: ItemStack,
     var iconData: Short,
     var name: String,
     var lore: List<String>,
     var glow: Boolean,
 ) {
-    fun toItemStack() = ItemStack(iconType, 1, iconData).apply {
+    fun toItemStack() = iconItem.clone().apply {
+        if (iconData > 0) {
+            durability = iconData
+        }
         itemMeta = itemMeta.apply {
             setDisplayName(name)
             lore = this@GuiIcon.lore
@@ -30,19 +32,19 @@ class GuiIcon(
 
     fun toGuiItemStack() = toGuiItemStack(null)
 
-    fun clone() = GuiIcon(iconType, iconData, name, lore, glow)
+    fun clone() = GuiIcon(iconItem, iconData, name, lore, glow)
 
     companion object {
         @JvmStatic
         fun fromConfig(configSection: ConfigurationSection): GuiIcon {
-            val iconType = XMaterial.matchXMaterial(configSection.getString("icon.type", "STONE")!!)
+            val iconItem = XMaterial.matchXMaterial(configSection.getString("icon.type", "STONE")!!)
                 .orElse(XMaterial.STONE)
-                .parseMaterial()!!
+                .parseItem()!!
             val iconData = configSection.getInt("icon.data", 0).toShort()
             val name = configSection.getString("name", "&f")!!.color()
             val lore = configSection.getStringList("lore").color()
             val glow = configSection.getBoolean("glow")
-            return GuiIcon(iconType, iconData, name, lore, glow)
+            return GuiIcon(iconItem, iconData, name, lore, glow)
         }
 
         fun ConfigurationSection.getGuiIcon(path: String) = fromConfig(getConfigurationSection(path)!!)
