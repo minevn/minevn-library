@@ -1,14 +1,19 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    id("com.github.johnrengelman.shadow") version "8.1.1"
+    id("io.github.goooler.shadow") version "8.1.7"
     id("maven-publish")
+}
+
+repositories {
+    maven("https://repo.codemc.io/repository/maven-snapshots/")
 }
 
 dependencies {
     implementation(project(":minevnlib-master"))
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
+    implementation("net.wesjd:anvilgui:1.9.4-SNAPSHOT")
 }
 
 publishing {
@@ -45,6 +50,7 @@ tasks {
         relocate("com.zaxxer.hikari", "net.minevn.libs.hikari")
         relocate("com.fasterxml.jackson", "net.minevn.libs.jackson")
         relocate("com.google.gson", "net.minevn.libs.gson")
+        relocate("net.wesjd.anvilgui", "net.minevn.libs.anvilgui")
         exclude("META-INF/versions/21/org/h2/util/Utils21.class")
     }
 

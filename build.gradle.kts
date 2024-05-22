@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "1.0.6"
+    version = "1.0.7"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -45,20 +45,11 @@ allprojects {
   
     }
 
-    java {
-        toolchain {
-            languageVersion.set(JavaLanguageVersion.of(8))
-        }
-    }
-
+    java.toolchain.languageVersion.set(JavaLanguageVersion.of(8))
     val compileKotlin: KotlinCompile by tasks
-    compileKotlin.kotlinOptions {
-        jvmTarget = "1.8"
-    }
     val compileTestKotlin: KotlinCompile by tasks
-    compileTestKotlin.kotlinOptions {
-        jvmTarget = "1.8"
-    }
+    compileKotlin.kotlinOptions.jvmTarget = "1.8"
+    compileTestKotlin.kotlinOptions.jvmTarget = "1.8"
 
     configurations {
         testImplementation.get().extendsFrom(compileOnly.get())
