@@ -31,7 +31,7 @@ open class FileConfig(val plugin: JavaPlugin, val name: String) {
         }
     }
 
-    open fun get(key: String): String = (config.getString(key) ?: baseConfig.getString(key, "")).color()
+    open fun get(key: String): String = (config.getString(key) ?: baseConfig.getString(key, ""))!!.color()
 
     open fun getList(key: String) =
         (config.getStringList(key)?.takeIf { it.isNotEmpty() } ?: baseConfig.getStringList(key))

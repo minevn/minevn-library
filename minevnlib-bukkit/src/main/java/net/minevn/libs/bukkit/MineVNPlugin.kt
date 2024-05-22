@@ -63,17 +63,17 @@ abstract class MineVNPlugin : JavaPlugin() {
 
         dbPool = when (dbType) {
             "mysql", "mariadb" -> {
-                val host = config.getString("$prefix.host")
+                val host = config.getString("$prefix.host")!!
                 val port = config.getInt("$prefix.port")
-                val database = config.getString("$prefix.database")
-                val user = config.getString("$prefix.user")
-                val password = config.getString("$prefix.password")
+                val database = config.getString("$prefix.database")!!
+                val user = config.getString("$prefix.user")!!
+                val password = config.getString("$prefix.password")!!
                 if (dbType == "mysql") MyDBP(host, port, database, user, password, logger, exceptionLogger, customDataSource)
                 else MariaDBP(host, port, database, user, password, logger, exceptionLogger, customDataSource)
             }
 
             "h2" -> {
-                val file = config.getString("$prefix.file")
+                val file = config.getString("$prefix.file")!!
                 H2DBP(dataFolder, file, logger, exceptionLogger, customDataSource)
             }
 
