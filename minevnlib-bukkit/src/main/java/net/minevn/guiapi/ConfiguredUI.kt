@@ -14,7 +14,7 @@ abstract class ConfiguredUI(
     private val plugin: JavaPlugin,
 ) : GuiInventory(
     getConfig(configPath, plugin).getInt("rows") * 9,
-    getConfig(configPath, plugin).getString("name").color()
+    getConfig(configPath, plugin).getString("name")?.color()
 ) {
     companion object {
         private val configList = mutableMapOf<Plugin, MutableMap<String, YamlConfiguration>>()

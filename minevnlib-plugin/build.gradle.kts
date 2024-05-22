@@ -51,6 +51,7 @@ tasks {
         relocate("com.fasterxml.jackson", "net.minevn.libs.jackson")
         relocate("com.google.gson", "net.minevn.libs.gson")
         relocate("net.wesjd.anvilgui", "net.minevn.libs.anvilgui")
+        relocate("com.cryptomorin.xseries", "net.minevn.libs.xseries")
         exclude("META-INF/versions/21/org/h2/util/Utils21.class")
     }
 

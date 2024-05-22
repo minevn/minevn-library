@@ -2,4 +2,5 @@ name: MineVNLib
 author: MineVN
 main: net.minevn.libs.bukkit.MineVNLib
 version: 1.0.6
+api-version: 1.13
 softdepend: [eco]

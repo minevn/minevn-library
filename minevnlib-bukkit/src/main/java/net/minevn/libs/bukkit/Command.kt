@@ -130,10 +130,10 @@ class Command : TabExecutor {
 
     override fun onTabComplete(
         sender: CommandSender,
-        command: org.bukkit.command.Command?,
-        alias: String?,
+        command: org.bukkit.command.Command,
+        alias: String,
         args: Array<String>
-    ): List<String> = onTabComplete(sender, command, alias, command!!.name, args)
+    ): List<String> = onTabComplete(sender, command, alias, command.name, args)
 
     fun onCommand(
         sender: CommandSender,
@@ -150,10 +150,10 @@ class Command : TabExecutor {
 
     override fun onCommand(
         sender: CommandSender,
-        command: org.bukkit.command.Command?,
-        label: String?,
+        command: org.bukkit.command.Command,
+        label: String,
         args: Array<String>
-    ) = onCommand(sender, command, label, command!!.name, args)
+    ) = onCommand(sender, command, label, command.name, args)
 
     /**
      * Register the command
@@ -164,7 +164,7 @@ class Command : TabExecutor {
      */
     fun register(plugin: JavaPlugin, command: String) {
         plugin.getCommand(command)?.let {
-            it.executor = this
+            it.setExecutor(this)
             it.tabCompleter = this
             plugin.logger.info("Registered command $command")
         }

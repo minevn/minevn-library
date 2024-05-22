@@ -1,5 +1,6 @@
 package net.minevn.guiapi;
 
+import com.cryptomorin.xseries.XMaterial;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -60,7 +61,7 @@ public class GuiItemStack {
         item = new ItemStack(material, amount, data);
         ItemMeta im = item.getItemMeta();
         im.setDisplayName(name);
-        if (lores != null && lores.size() > 0)
+        if (lores != null && !lores.isEmpty())
             im.setLore(lores);
         if (glow) {
             im.addEnchant(Enchantment.DURABILITY, 1, true);
@@ -77,7 +78,7 @@ public class GuiItemStack {
         item = new ItemStack(material, amount, data);
         ItemMeta im = item.getItemMeta();
         im.setDisplayName(name);
-        if (lores != null && lores.size() > 0) {
+        if (lores != null && !lores.isEmpty()) {
             im.setLore(lores);
         }
         if (glow) {
