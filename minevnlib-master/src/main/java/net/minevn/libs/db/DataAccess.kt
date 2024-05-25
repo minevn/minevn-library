@@ -53,6 +53,9 @@ abstract class DataAccess {
             }
         }
 
+    @Synchronized
+    protected fun PreparedStatement.update() = executeUpdate()
+
     /**
      * Map all records in the ResultSet to a list
      */
