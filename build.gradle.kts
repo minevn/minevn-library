@@ -2,18 +2,17 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `java-library`
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "2.0.0"
 }
 
 allprojects {
     group = "net.minevn"
-    version = "1.0.8"
+    version = "1.1.0"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
 
     repositories {
-        mavenLocal()
         mavenCentral()
     }
 
