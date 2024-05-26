@@ -7,3 +7,13 @@ dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT")
     implementation("com.github.cryptomorin:XSeries:10.0.0") { isTransitive = false }
 }
+
+tasks.processResources {
+    outputs.upToDateWhen { false }
+    filesMatching(listOf("**/plugin.yml")) {
+        expand(mapOf("version" to project.version.toString()))
+        println("$name: set version to ${project.version}")
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    filteringCharset = Charsets.UTF_8.name()
+}
