@@ -1,5 +1,8 @@
 package net.minevn.libs
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonParser
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -70,3 +73,16 @@ fun minMaxEpochTimestamp(monthYear: String): Pair<Long, Long> {
 
     return Pair(startOfMonth, endOfMonth)
 }
+
+private val gson: Gson = Gson()
+fun Any.toJson() = gson.toJson(this)!!
+fun String.parseJson() = JsonParser.parseString(this)!!
+fun JsonElement?.getOrNull() = if (this == null || this.isJsonNull) null else this
+fun JsonElement?.asBooleanOrNull() = this?.getOrNull()?.asBoolean
+fun JsonElement?.asIntOrNull() = this?.getOrNull()?.asInt
+fun JsonElement?.asLongOrNull() = this?.getOrNull()?.asLong
+fun JsonElement?.asDoubleOrNull() = this?.getOrNull()?.asDouble
+fun JsonElement?.asFloatOrNull() = this?.getOrNull()?.asFloat
+fun JsonElement?.asShortOrNull() = this?.getOrNull()?.asShort
+fun JsonElement?.asStringOrNull() = this?.getOrNull()?.asString
+fun JsonElement?.asArrayOrNull() = this?.getOrNull()?.asJsonArray
