@@ -77,12 +77,12 @@ fun minMaxEpochTimestamp(monthYear: String): Pair<Long, Long> {
 private val gson: Gson = Gson()
 fun Any.toJson() = gson.toJson(this)!!
 fun String.parseJson() = JsonParser.parseString(this)!!
-fun JsonElement.getOrNull() = if (isJsonNull) null else this
-fun JsonElement.asBoolean() = getOrNull()?.asBoolean
-fun JsonElement.asInt() = getOrNull()?.asInt
-fun JsonElement.asLong() = getOrNull()?.asLong
-fun JsonElement.asDouble() = getOrNull()?.asDouble
-fun JsonElement.asFloat() = getOrNull()?.asFloat
-fun JsonElement.asShort() = getOrNull()?.asShort
-fun JsonElement.asString() = getOrNull()?.asString
-fun JsonElement.asArray() = getOrNull()?.asJsonArray
+fun JsonElement?.getOrNull() = if (this == null || this.isJsonNull) null else this
+fun JsonElement?.asBooleanOrNull() = this?.getOrNull()?.asBoolean
+fun JsonElement?.asIntOrNull() = this?.getOrNull()?.asInt
+fun JsonElement?.asLongOrNull() = this?.getOrNull()?.asLong
+fun JsonElement?.asDoubleOrNull() = this?.getOrNull()?.asDouble
+fun JsonElement?.asFloatOrNull() = this?.getOrNull()?.asFloat
+fun JsonElement?.asShortOrNull() = this?.getOrNull()?.asShort
+fun JsonElement?.asStringOrNull() = this?.getOrNull()?.asString
+fun JsonElement?.asArrayOrNull() = this?.getOrNull()?.asJsonArray
