@@ -62,6 +62,7 @@ class YearWeek(var year: Int, var week: Int) {
 val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss", Locale.forLanguageTag("en-150"))
 
 fun Long.timeToString() = dateFormat.format(Date(this))!!
+fun String.formatDate() = dateFormat.parse(this)!!
 
 fun minMaxEpochTimestamp(monthYear: String): Pair<Long, Long> {
     val formatter = DateTimeFormatter.ofPattern("MM/yyyy")
