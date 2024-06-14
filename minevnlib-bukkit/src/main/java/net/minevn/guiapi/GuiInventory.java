@@ -24,6 +24,7 @@ public class GuiInventory implements InventoryHolder {
 
     private Consumer<InventoryClickEvent> onTopClick;
     private Consumer<InventoryClickEvent> onBottomClick;
+    private Consumer<InventoryClickEvent> onGlobalClick;
     private Consumer<InventoryDragEvent> onTopDrag;
     private Consumer<InventoryDragEvent> onBottomDrag;
     private Consumer<InventoryCloseEvent> onClose;
@@ -86,25 +87,17 @@ public class GuiInventory implements InventoryHolder {
         }
     }
 
-    public void setOnTopClick(@Nullable Consumer<InventoryClickEvent> onTopClick) {
-        this.onTopClick = onTopClick;
-    }
+    public void setOnTopClick(@Nullable Consumer<InventoryClickEvent> onTopClick) { this.onTopClick = onTopClick; }
 
-    public void setOnBottomClick(@Nullable Consumer<InventoryClickEvent> onBottomClick) {
-        this.onBottomClick = onBottomClick;
-    }
+    public void setOnBottomClick(@Nullable Consumer<InventoryClickEvent> onBottomClick) { this.onBottomClick = onBottomClick; }
 
-    public void setOnTopDrag(@Nullable Consumer<InventoryDragEvent> onTopDrag) {
-        this.onTopDrag = onTopDrag;
-    }
+    public void setOnGlobalClick(@Nullable Consumer<InventoryClickEvent> onGlobalClick) {this.onGlobalClick = onGlobalClick; }
 
-    public void setOnBottomDrag(@Nullable Consumer<InventoryDragEvent> onBottomDrag) {
-        this.onBottomDrag = onBottomDrag;
-    }
+    public void setOnTopDrag(@Nullable Consumer<InventoryDragEvent> onTopDrag) { this.onTopDrag = onTopDrag; }
 
-    public void setOnClose(Consumer<InventoryCloseEvent> onClose) {
-        this.onClose = onClose;
-    }
+    public void setOnBottomDrag(@Nullable Consumer<InventoryDragEvent> onBottomDrag) { this.onBottomDrag = onBottomDrag; }
+
+    public void setOnClose(Consumer<InventoryCloseEvent> onClose) { this.onClose = onClose; }
 
     public void clear() {
         inv.clear();
@@ -133,13 +126,11 @@ public class GuiInventory implements InventoryHolder {
 
     public void onClose(InventoryCloseEvent e) {}
 
-    public Consumer<InventoryClickEvent> getOnTopClick() {
-        return onTopClick;
-    }
+    public Consumer<InventoryClickEvent> getOnTopClick() { return onTopClick; }
 
-    public Consumer<InventoryClickEvent> getOnBottomClick() {
-        return onBottomClick;
-    }
+    public Consumer<InventoryClickEvent> getOnBottomClick() { return onBottomClick; }
+
+    public Consumer<InventoryClickEvent> getOnGlobalClick() { return onGlobalClick; }
 
     public Consumer<InventoryDragEvent> getOnTopDrag() {
         return onTopDrag;

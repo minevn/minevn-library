@@ -11,7 +11,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class GuiListener implements Listener {
 //    private JavaPlugin plugin;
@@ -25,10 +24,14 @@ public class GuiListener implements Listener {
     public void onClick(InventoryClickEvent e) {
         Inventory inv = e.getInventory();
         InventoryHolder holder = inv.getHolder();
+        if (e.getSlotType() == InventoryType.SlotType.OUTSIDE) return;
         if (holder instanceof GuiInventory) {
             GuiInventory guiInventory = (GuiInventory) holder;
-            guiInventory.onClick(e);
+
+            guiInventory.getOnGlobalClick().accept(e);
+
             if (e.getClickedInventory() == e.getView().getTopInventory()) {
+                guiInventory.onClick(e);
                 if (guiInventory.getOnTopClick() != null) {
                     guiInventory.getOnTopClick().accept(e);
                 }
