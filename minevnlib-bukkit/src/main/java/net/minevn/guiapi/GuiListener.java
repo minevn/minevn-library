@@ -23,21 +23,23 @@ public class GuiListener implements Listener {
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         Inventory inv = e.getInventory();
+        if (inv == null) { return; }
         InventoryHolder holder = inv.getHolder();
-        if (e.getSlotType() == InventoryType.SlotType.OUTSIDE) return;
+        if (holder == null) { return; }
+        if (e.getSlotType() == InventoryType.SlotType.OUTSIDE) { return; }
         if (holder instanceof GuiInventory) {
             GuiInventory guiInventory = (GuiInventory) holder;
-
-            guiInventory.getOnGlobalClick().accept(e);
-
+            if (guiInventory.getGlobalClickAction() != null) {
+                guiInventory.getGlobalClickAction().accept(e);
+            }
             if (e.getClickedInventory() == e.getView().getTopInventory()) {
                 guiInventory.onClick(e);
-                if (guiInventory.getOnTopClick() != null) {
-                    guiInventory.getOnTopClick().accept(e);
+                if (guiInventory.getTopClickAction() != null) {
+                    guiInventory.getTopClickAction().accept(e);
                 }
             } else {
-                if (guiInventory.getOnBottomClick() != null) {
-                    guiInventory.getOnBottomClick().accept(e);
+                if (guiInventory.getBottomClickAction() != null) {
+                    guiInventory.getBottomClickAction().accept(e);
                 }
             }
         }
@@ -46,67 +48,54 @@ public class GuiListener implements Listener {
     /**
      * Handle inventory drag event (Credit to @stefvanschie)
      */
-
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent e) {
         Inventory inv = e.getInventory();
+        if (inv == null) { return; }
         InventoryHolder holder = inv.getHolder();
-
-        if (!(holder instanceof GuiInventory)) return;
-
+        if (holder == null) { return; }
+        if (holder instanceof GuiInventory == false) { return; }
         GuiInventory guiInventory = (GuiInventory) holder;
-
         InventoryView view = e.getView();
-
         Set<Integer> inventorySlots = e.getRawSlots();
-
-        boolean top = false, bottom = false;
-
+        boolean isTopClick = false, isBottomClick = false;
         for (int inventorySlot : inventorySlots) {
             Inventory inventory = view.getInventory(inventorySlot);
 
             if (view.getTopInventory().equals(inventory)) {
-                top = true;
+                isTopClick  = true;
             } else if (view.getBottomInventory().equals(inventory)) {
-                bottom = true;
+                isBottomClick = true;
             }
 
-            if (top && bottom) {
+            if (isTopClick  && isBottomClick) {
                 break;
             }
         }
-
-        if (top && guiInventory.getOnTopDrag() != null) {
-            guiInventory.getOnTopDrag().accept(e);
+        if (isTopClick  && guiInventory.getTopDragAction() != null) {
+            guiInventory.getTopDragAction().accept(e);
         }
-
-        if (bottom && guiInventory.getOnBottomDrag() != null) {
-            guiInventory.getOnBottomDrag().accept(e);
+        if (isBottomClick && guiInventory.getBottomDragAction() != null) {
+            guiInventory.getBottomDragAction().accept(e);
         }
-
         // If the drag event occurred in only one slot
         if (inventorySlots.size() == 1) {
             int index = inventorySlots.toArray(new Integer[0])[0];
             InventoryType.SlotType slotType = view.getSlotType(index);
-
             boolean even = e.getType() == DragType.EVEN;
-
             ClickType clickType = even ? ClickType.LEFT : ClickType.RIGHT;
             InventoryAction inventoryAction = even ? InventoryAction.PLACE_SOME : InventoryAction.PLACE_ONE;
-
             ItemStack previousViewCursor = view.getCursor();
             // Overwrite getCursor in inventory click event to mimic real event fired by Bukkit.
             view.setCursor(e.getOldCursor());
             //this is a fake click event, firing this may cause other plugins to function incorrectly, so keep it local
             InventoryClickEvent inventoryClickEvent = new InventoryClickEvent(view, slotType, index, clickType,
                     inventoryAction);
-
             guiInventory.onClick(inventoryClickEvent);
             // Restore previous cursor only if someone has not changed it manually in onInventoryClick.
             if (Objects.equals(view.getCursor(), e.getOldCursor())) {
                 view.setCursor(previousViewCursor);
             }
-
             e.setCancelled(inventoryClickEvent.isCancelled());
         }
     }
@@ -114,12 +103,14 @@ public class GuiListener implements Listener {
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
         Inventory inv = e.getInventory();
+        if (inv == null) { return; }
         InventoryHolder holder = inv.getHolder();
+        if (holder == null) { return; }
         if (holder instanceof GuiInventory) {
             GuiInventory guiInventory = (GuiInventory) holder;
             guiInventory.onClose(e);
-            if (guiInventory.getOnClose() != null) {
-                guiInventory.getOnClose().accept(e);
+            if (guiInventory.getCloseAction() != null) {
+                guiInventory.getCloseAction().accept(e);
             }
         }
     }

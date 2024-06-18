@@ -14,7 +14,7 @@ public class TestGui extends GuiInventory {
     public TestGui(Player viewer) {
         super(9, "This is test GUI");
         buildGui();
-        openInventory(viewer);
+        openIventory(viewer);
     }
 
     public void buildGui() {

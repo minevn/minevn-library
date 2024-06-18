@@ -20,14 +20,14 @@ public class GuiInventory implements InventoryHolder {
     private final Inventory inv;
     private GuiItemStack[] actions;
     private boolean locked = false;
-    private boolean manualHandle = false;
+    private boolean isDraggingAllowed = false;
 
-    private Consumer<InventoryClickEvent> onTopClick;
-    private Consumer<InventoryClickEvent> onBottomClick;
-    private Consumer<InventoryClickEvent> onGlobalClick;
-    private Consumer<InventoryDragEvent> onTopDrag;
-    private Consumer<InventoryDragEvent> onBottomDrag;
-    private Consumer<InventoryCloseEvent> onClose;
+    private Consumer<InventoryClickEvent> topClickAction;
+    private Consumer<InventoryClickEvent> bottomClickAction;
+    private Consumer<InventoryClickEvent> globalClickAction;
+    private Consumer<InventoryDragEvent> topDragAction;
+    private Consumer<InventoryDragEvent> bottomDragAction;
+    private Consumer<InventoryCloseEvent> closeAction;
 
     public GuiInventory(int size, String title) {
         inv = Bukkit.createInventory(this, size, title);
@@ -69,14 +69,11 @@ public class GuiInventory implements InventoryHolder {
     }
 
     public void removeItem(int slot) {
-        if (slot < inv.getSize()) {
-            inv.setItem(slot, null);
-            actions[slot] = null;
-        }
+        setItem(slot, null);
     }
 
     public void onClick(InventoryClickEvent e) {
-        if (!manualHandle) {
+        if (!isDraggingAllowed) {
             e.setCancelled(true);
         }
         if (!locked) {
@@ -87,17 +84,17 @@ public class GuiInventory implements InventoryHolder {
         }
     }
 
-    public void setOnTopClick(@Nullable Consumer<InventoryClickEvent> onTopClick) { this.onTopClick = onTopClick; }
+    public void setTopClickAction(@Nullable Consumer<InventoryClickEvent> topClickAction) { this.topClickAction = topClickAction; }
 
-    public void setOnBottomClick(@Nullable Consumer<InventoryClickEvent> onBottomClick) { this.onBottomClick = onBottomClick; }
+    public void setBottomClickAction(@Nullable Consumer<InventoryClickEvent> bottomClickAction) { this.bottomClickAction = bottomClickAction; }
 
-    public void setOnGlobalClick(@Nullable Consumer<InventoryClickEvent> onGlobalClick) {this.onGlobalClick = onGlobalClick; }
+    public void setGlobalClickAction(@Nullable Consumer<InventoryClickEvent> globalClickAction) {this.globalClickAction = globalClickAction; }
 
-    public void setOnTopDrag(@Nullable Consumer<InventoryDragEvent> onTopDrag) { this.onTopDrag = onTopDrag; }
+    public void setTopDragAction(@Nullable Consumer<InventoryDragEvent> topDragAction) { this.topDragAction = topDragAction; }
 
-    public void setOnBottomDrag(@Nullable Consumer<InventoryDragEvent> onBottomDrag) { this.onBottomDrag = onBottomDrag; }
+    public void setBottomDragAction(@Nullable Consumer<InventoryDragEvent> bottomDragAction) { this.bottomDragAction = bottomDragAction; }
 
-    public void setOnClose(Consumer<InventoryCloseEvent> onClose) { this.onClose = onClose; }
+    public void setCloseAction(Consumer<InventoryCloseEvent> closeAction) { this.closeAction = closeAction; }
 
     public void clear() {
         inv.clear();
@@ -112,35 +109,33 @@ public class GuiInventory implements InventoryHolder {
         locked = false;
     }
 
-    public void setManualHandle(boolean manualHandle) {
-        this.manualHandle = manualHandle;
-    }
+    public void setDraggingAllowed(boolean isDraggingAllowed) { this.isDraggingAllowed = isDraggingAllowed; }
 
-    public void openInventory(Player viewer) {
+    public void openIventory(Player viewer) {
         viewer.openInventory(inv);
     }
 
     public boolean isViewing(Player viewer) {
-        return viewer != null && viewer.getOpenInventory().getTopInventory().getHolder() == this && viewer.isOnline();
+        return viewer != null && viewer.isOnline() && viewer.getOpenInventory().getTopInventory().getHolder() == this;
     }
 
     public void onClose(InventoryCloseEvent e) {}
 
-    public Consumer<InventoryClickEvent> getOnTopClick() { return onTopClick; }
+    public Consumer<InventoryClickEvent> getTopClickAction() { return topClickAction; }
 
-    public Consumer<InventoryClickEvent> getOnBottomClick() { return onBottomClick; }
+    public Consumer<InventoryClickEvent> getBottomClickAction() { return bottomClickAction; }
 
-    public Consumer<InventoryClickEvent> getOnGlobalClick() { return onGlobalClick; }
+    public Consumer<InventoryClickEvent> getGlobalClickAction() { return globalClickAction; }
 
-    public Consumer<InventoryDragEvent> getOnTopDrag() {
-        return onTopDrag;
+    public Consumer<InventoryDragEvent> getTopDragAction() {
+        return topDragAction;
     }
 
-    public Consumer<InventoryDragEvent> getOnBottomDrag() {
-        return onBottomDrag;
+    public Consumer<InventoryDragEvent> getBottomDragAction() {
+        return bottomDragAction;
     }
 
-    public Consumer<InventoryCloseEvent> getOnClose() {
-        return onClose;
+    public Consumer<InventoryCloseEvent> getCloseAction() {
+        return closeAction;
     }
 }
