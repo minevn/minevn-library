@@ -3,6 +3,7 @@ package net.minevn.libs
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
+import java.text.SimpleDateFormat
 import java.time.YearMonth
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -59,7 +60,7 @@ class YearWeek(var year: Int, var week: Int) {
     override fun toString() = "${year}_w${week.toString().padStart(2, '0')}"
 }
 
-val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("en-150"))
+val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("en-150"))
 
 fun Long.timeToString() = dateFormat.format(Date(this))!!
 fun String.formatDate() = dateFormat.parse(this)!!
