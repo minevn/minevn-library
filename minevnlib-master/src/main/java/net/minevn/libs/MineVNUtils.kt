@@ -1,11 +1,17 @@
 package net.minevn.libs
 
+import com.cronutils.model.CronType
+import com.cronutils.model.definition.CronDefinitionBuilder
+import com.cronutils.model.time.ExecutionTime
+import com.cronutils.parser.CronParser
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonParser
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.time.YearMonth
 import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -75,6 +81,18 @@ fun minMaxEpochTimestamp(monthYear: String): Pair<Long, Long> {
 
     return Pair(startOfMonth, endOfMonth)
 }
+
+val cronParser = CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX))
+
+fun getNextSchedule(cronExpression: String, fromTime: ZonedDateTime = ZonedDateTime.now()): ZonedDateTime? {
+    val cron = cronParser.parse(cronExpression)
+    val executionTime = ExecutionTime.forCron(cron)
+    return executionTime.nextExecution(fromTime).orElse(null)
+}
+
+fun ZonedDateTime.getNextSchedule(cronExpression: String) = getNextSchedule(cronExpression, this)
+
+fun Long.toZonedDateTime() = ZonedDateTime.ofInstant(Instant.ofEpochSecond(this), ZoneId.systemDefault())!!
 
 private val gson: Gson = Gson()
 fun Any.toJson() = gson.toJson(this)!!
