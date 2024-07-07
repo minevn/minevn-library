@@ -52,6 +52,7 @@ tasks {
         relocate("com.google.gson", "net.minevn.libs.gson")
         relocate("net.wesjd.anvilgui", "net.minevn.libs.anvilgui")
         relocate("com.cryptomorin.xseries", "net.minevn.libs.xseries")
+        relocate("com.cronutils", "net.minevn.libs.cronutils")
         exclude("META-INF/versions/21/org/h2/util/Utils21.class")
     }
 
