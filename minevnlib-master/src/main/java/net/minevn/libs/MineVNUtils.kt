@@ -82,7 +82,7 @@ fun minMaxEpochTimestamp(monthYear: String): Pair<Long, Long> {
     return Pair(startOfMonth, endOfMonth)
 }
 
-val cronParser = CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.UNIX))
+val cronParser = CronParser(CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ))
 
 fun getNextSchedule(cronExpression: String, fromTime: ZonedDateTime = ZonedDateTime.now()): ZonedDateTime? {
     val cron = cronParser.parse(cronExpression)
