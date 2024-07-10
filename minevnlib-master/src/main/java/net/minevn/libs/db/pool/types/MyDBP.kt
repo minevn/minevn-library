@@ -32,8 +32,8 @@ class MyDBP(
     fun getDefaultDataSource() = HikariDataSource().apply {
         username = user
         password = this@MyDBP.password
-        maximumPoolSize = 12
-        minimumIdle = 12
+        maximumPoolSize = 20
+        minimumIdle = 10
         maxLifetime = 1800000
         keepaliveTime = 60000L
         connectionTimeout = 20000

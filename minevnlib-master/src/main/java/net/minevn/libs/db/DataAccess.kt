@@ -22,18 +22,20 @@ abstract class DataAccess {
     protected fun <R> String.statementWithKey(action: PreparedStatement.() -> R) : R =
         statement(action, true)
 
-    private fun <R> String.statement(action: PreparedStatement.() -> R, generatedKey: Boolean) : R {
+    private fun <R> String.statement(action: PreparedStatement.() -> R, getGeneratedKey: Boolean) : R {
         val transaction = getTransaction()
-        var transactional = true
-        val connection = transaction?.connection ?: run {
-            transactional = false
-            dbPool.getConnection()
-        }
-        try {
-            if (!generatedKey) return connection.prepareStatement(this).use { it.action() }
-            return connection.prepareStatement(this, Statement.RETURN_GENERATED_KEYS).use { it.action() }
+        val isTransactional = transaction != null
+        val connection = transaction?.connection ?: dbPool.getConnection()
+        return try {
+            if (!getGeneratedKey) {
+                connection.prepareStatement(this).use { it.action() }
+            } else {
+                connection.prepareStatement(this, Statement.RETURN_GENERATED_KEYS).use { it.action() }
+            }
         } finally {
-            if (!transactional) connection.close()
+            if (!isTransactional) {
+                connection.close()
+            }
         }
     }
 
