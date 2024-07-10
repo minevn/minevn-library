@@ -20,9 +20,10 @@ class MariaDBP(
                     dataSourceClassName = "org.mariadb.jdbc.MariaDbDataSource"
                 }
             }
-            dataSource.connection.close()
 
-            logger("Connected to the database (MariaDB)")
+            dataSource.connection.use {
+                logger("Connected to the database (MariaDB)")
+            }
         } catch (ex: Exception) {
             exceptionLogger(Level.SEVERE, "Could not connect to the database", ex)
             throw ex
