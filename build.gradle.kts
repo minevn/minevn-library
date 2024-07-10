@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "1.1.4"
+    version = "1.1.5"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -22,8 +22,9 @@ allprojects {
         implementation("com.h2database:h2:2.1.214")
         implementation("org.mariadb.jdbc:mariadb-java-client:2.7.11") { exclude("*") }
 
-        // gson
+        // ohthers
         implementation("com.google.code.gson:gson:2.10.1")
+        implementation("com.cronutils:cron-utils:9.2.1")
 
         // JUnit
         testImplementation(platform("org.junit:junit-bom:5.9.2"))
