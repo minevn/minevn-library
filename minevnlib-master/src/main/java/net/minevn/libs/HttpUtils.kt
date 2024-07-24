@@ -23,7 +23,7 @@ fun http(
     val httpsCon = (URL(url).run { proxy?.let { openConnection(it) } ?: openConnection() } as HttpURLConnection).apply {
         doOutput = true
         doInput = true
-        instanceFollowRedirects = false
+        instanceFollowRedirects = true
         requestMethod = method
         if (isMultipart) {
             setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
