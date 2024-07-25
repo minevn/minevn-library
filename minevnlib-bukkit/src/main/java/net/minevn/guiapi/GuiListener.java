@@ -23,10 +23,16 @@ public class GuiListener implements Listener {
     @EventHandler
     public void onClick(InventoryClickEvent e) {
         Inventory inv = e.getInventory();
-        if (inv == null) { return; }
+        if (inv == null) {
+            return;
+        }
         InventoryHolder holder = inv.getHolder();
-        if (holder == null) { return; }
-        if (e.getSlotType() == InventoryType.SlotType.OUTSIDE) { return; }
+        if (holder == null) {
+            return;
+        }
+        if (e.getSlotType() == InventoryType.SlotType.OUTSIDE) {
+            return;
+        }
         if (holder instanceof GuiInventory) {
             GuiInventory guiInventory = (GuiInventory) holder;
             if (guiInventory.getGlobalClickAction() != null) {
@@ -51,10 +57,16 @@ public class GuiListener implements Listener {
     @EventHandler
     public void onInventoryDrag(InventoryDragEvent e) {
         Inventory inv = e.getInventory();
-        if (inv == null) { return; }
+        if (inv == null) {
+            return;
+        }
         InventoryHolder holder = inv.getHolder();
-        if (holder == null) { return; }
-        if (holder instanceof GuiInventory == false) { return; }
+        if (holder == null) {
+            return;
+        }
+        if (holder instanceof GuiInventory == false) {
+            return;
+        }
         GuiInventory guiInventory = (GuiInventory) holder;
         InventoryView view = e.getView();
         Set<Integer> inventorySlots = e.getRawSlots();
@@ -63,16 +75,16 @@ public class GuiListener implements Listener {
             Inventory inventory = view.getInventory(inventorySlot);
 
             if (view.getTopInventory().equals(inventory)) {
-                isTopClick  = true;
+                isTopClick = true;
             } else if (view.getBottomInventory().equals(inventory)) {
                 isBottomClick = true;
             }
 
-            if (isTopClick  && isBottomClick) {
+            if (isTopClick && isBottomClick) {
                 break;
             }
         }
-        if (isTopClick  && guiInventory.getTopDragAction() != null) {
+        if (isTopClick && guiInventory.getTopDragAction() != null) {
             guiInventory.getTopDragAction().accept(e);
         }
         if (isBottomClick && guiInventory.getBottomDragAction() != null) {
@@ -103,9 +115,13 @@ public class GuiListener implements Listener {
     @EventHandler
     public void onClose(InventoryCloseEvent e) {
         Inventory inv = e.getInventory();
-        if (inv == null) { return; }
+        if (inv == null) {
+            return;
+        }
         InventoryHolder holder = inv.getHolder();
-        if (holder == null) { return; }
+        if (holder == null) {
+            return;
+        }
         if (holder instanceof GuiInventory) {
             GuiInventory guiInventory = (GuiInventory) holder;
             guiInventory.onClose(e);

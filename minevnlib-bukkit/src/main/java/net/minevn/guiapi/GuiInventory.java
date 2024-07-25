@@ -84,17 +84,29 @@ public class GuiInventory implements InventoryHolder {
         }
     }
 
-    public void setTopClickAction(@Nullable Consumer<InventoryClickEvent> topClickAction) { this.topClickAction = topClickAction; }
+    public void setTopClickAction(@Nullable Consumer<InventoryClickEvent> topClickAction) {
+        this.topClickAction = topClickAction;
+    }
 
-    public void setBottomClickAction(@Nullable Consumer<InventoryClickEvent> bottomClickAction) { this.bottomClickAction = bottomClickAction; }
+    public void setBottomClickAction(@Nullable Consumer<InventoryClickEvent> bottomClickAction) {
+        this.bottomClickAction = bottomClickAction;
+    }
 
-    public void setGlobalClickAction(@Nullable Consumer<InventoryClickEvent> globalClickAction) {this.globalClickAction = globalClickAction; }
+    public void setGlobalClickAction(@Nullable Consumer<InventoryClickEvent> globalClickAction) {
+        this.globalClickAction = globalClickAction;
+    }
 
-    public void setTopDragAction(@Nullable Consumer<InventoryDragEvent> topDragAction) { this.topDragAction = topDragAction; }
+    public void setTopDragAction(@Nullable Consumer<InventoryDragEvent> topDragAction) {
+        this.topDragAction = topDragAction;
+    }
 
-    public void setBottomDragAction(@Nullable Consumer<InventoryDragEvent> bottomDragAction) { this.bottomDragAction = bottomDragAction; }
+    public void setBottomDragAction(@Nullable Consumer<InventoryDragEvent> bottomDragAction) {
+        this.bottomDragAction = bottomDragAction;
+    }
 
-    public void setCloseAction(Consumer<InventoryCloseEvent> closeAction) { this.closeAction = closeAction; }
+    public void setCloseAction(Consumer<InventoryCloseEvent> closeAction) {
+        this.closeAction = closeAction;
+    }
 
     public void clear() {
         inv.clear();
@@ -109,7 +121,8 @@ public class GuiInventory implements InventoryHolder {
         locked = false;
     }
 
-    public void setDraggingAllowed(boolean isDraggingAllowed) { this.isDraggingAllowed = isDraggingAllowed; }
+    public void setDraggingAllowed(boolean isDraggingAllowed) {
+        this.isDraggingAllowed = isDraggingAllowed; }
 
     public void openIventory(Player viewer) {
         viewer.openInventory(inv);
@@ -121,11 +134,17 @@ public class GuiInventory implements InventoryHolder {
 
     public void onClose(InventoryCloseEvent e) {}
 
-    public Consumer<InventoryClickEvent> getTopClickAction() { return topClickAction; }
+    public Consumer<InventoryClickEvent> getTopClickAction() {
+        return topClickAction;
+    }
 
-    public Consumer<InventoryClickEvent> getBottomClickAction() { return bottomClickAction; }
+    public Consumer<InventoryClickEvent> getBottomClickAction() {
+        return bottomClickAction;
+    }
 
-    public Consumer<InventoryClickEvent> getGlobalClickAction() { return globalClickAction; }
+    public Consumer<InventoryClickEvent> getGlobalClickAction() {
+        return globalClickAction;
+    }
 
     public Consumer<InventoryDragEvent> getTopDragAction() {
         return topDragAction;
