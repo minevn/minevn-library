@@ -23,8 +23,8 @@ jobs:
           mkdir -p target
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
           cp ./minevnlib-plugin/build/libs/MineVNLib-no-kotlin.jar ./target/MineVNLib-no-kotlin.jar
-          echo "::set-output name=hash::$(git rev-parse --short ${{ github.sha }})"
-          echo "::set-output name=version::$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')"
+          echo "hash=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_OUTPUT
+          echo "version=$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')" >> $GITHUB_OUTPUT
         id: plugin
       - name: Upload build artifact
         uses: actions/upload-artifact@v4.3.1
