@@ -39,3 +39,4 @@ jobs:
           prerelease: true
           name: "MineVNLib - ${{ steps.plugin.outputs.version }}-${{ steps.plugin.outputs.hash }}"
           artifacts: ./target/*.jar
+          commit: master
