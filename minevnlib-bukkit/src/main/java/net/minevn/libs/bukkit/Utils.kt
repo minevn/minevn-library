@@ -1,13 +1,21 @@
 package net.minevn.libs.bukkit
 
+import com.cryptomorin.xseries.XMaterial
+import me.clip.placeholderapi.PlaceholderAPI
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.entity.Player
 
 fun List<String>.color() = map { it.color() }
 
 fun String.color(): String = ChatColor.translateAlternateColorCodes('&', this)
+
+fun String.placeholder(player: Player? = null) =
+    PlaceholderAPI.setPlaceholders(player, this.replace("%player%", player?.name ?: ""))
+
+fun List<String>.placeholder(player: Player? = null) = this.map { it.placeholder(player) }
 
 fun runSync(action: Runnable) {
     if (Bukkit.isPrimaryThread()) {
@@ -73,4 +81,12 @@ fun String.asLocation() = split(",").let {
     val yaw = it[4].toFloat()
     val pitch = it[5].toFloat()
     Location(world, x, y, z, yaw, pitch)
+}
+
+fun XMaterial.quickMatch(name: String): Material? {
+    return try {
+        Material.valueOf(name)
+    } catch (ex: java.lang.Exception) {
+        XMaterial.matchXMaterial(name).orElse(XMaterial.AIR).parseMaterial()
+    }
 }
