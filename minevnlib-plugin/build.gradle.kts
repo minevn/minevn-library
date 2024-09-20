@@ -18,11 +18,33 @@ dependencies {
 
 publishing {
     publications {
+        create<MavenPublication>("maven") {
+            groupId = "net.minevn.libs"
+            artifactId = "MineVNLib"
+            version = project.version.toString()
+            from(components["java"])
+        }
         create<MavenPublication>("mavenJava") {
             artifact(tasks.shadowJar.get().archiveFile)
         }
     }
     repositories {
+        maven {
+            name = "MineVNRepositoryReleases"
+            url = uri("https://repo.minevn.net/releases")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
+        maven {
+            name = "MineVNRepositorySnapshots"
+            url = uri("https://repo.minevn.net/snapshots")
+            credentials(PasswordCredentials::class)
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
         maven {
             val mavenPath = project.properties["mavenPath"]
             url = if (mavenPath != null) {
