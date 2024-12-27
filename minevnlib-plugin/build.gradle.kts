@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":minevnlib-master"))
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
-    implementation("net.wesjd:anvilgui:1.10.2-SNAPSHOT")
+    implementation("net.wesjd:anvilgui:1.10.4-SNAPSHOT")
 }
 
 publishing {
