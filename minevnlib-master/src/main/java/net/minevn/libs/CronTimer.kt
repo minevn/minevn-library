@@ -2,7 +2,7 @@ package net.minevn.libs
 
 import java.time.ZonedDateTime
 
-@Suppress("unused")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class CronTimer(val expression: String) {
     var nextSchedule = parseNextSchedule(); private set
 
