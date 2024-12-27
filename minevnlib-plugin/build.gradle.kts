@@ -16,10 +16,19 @@ dependencies {
     implementation("net.wesjd:anvilgui:1.10.4-SNAPSHOT")
 }
 
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+    from(project(":minevnlib-master").sourceSets.main.get().allSource)
+    from(project(":minevnlib-bukkit").sourceSets.main.get().allSource)
+    from(project(":minevnlib-bungee").sourceSets.main.get().allSource)
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             artifact(tasks.shadowJar.get().archiveFile)
+            artifact(sourcesJar.get())
         }
     }
     repositories {
