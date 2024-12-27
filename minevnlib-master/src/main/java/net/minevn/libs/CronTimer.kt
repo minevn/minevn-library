@@ -6,7 +6,9 @@ import java.time.ZonedDateTime
 class CronTimer(val expression: String) {
     var nextSchedule = parseNextSchedule(); private set
 
-    fun parseNextSchedule() = getNextSchedule(expression, ZonedDateTime.now())
+    fun parseNextSchedule(time: ZonedDateTime) = getNextSchedule(expression, time)
+
+    fun parseNextSchedule() = parseNextSchedule(ZonedDateTime.now())
 
     fun update() {
         nextSchedule = parseNextSchedule()
