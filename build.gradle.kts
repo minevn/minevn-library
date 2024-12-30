@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "1.1.7"
+    version = "1.1.8"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -25,6 +25,7 @@ allprojects {
         // ohthers
         implementation("com.google.code.gson:gson:2.10.1")
         implementation("com.cronutils:cron-utils:9.2.1")
+        implementation("at.favre.lib:bcrypt:0.10.2")
 
         // JUnit
         testImplementation(platform("org.junit:junit-bom:5.9.2"))
