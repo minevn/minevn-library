@@ -25,7 +25,7 @@ allprojects {
         // ohthers
         implementation("com.google.code.gson:gson:2.10.1")
         implementation("com.cronutils:cron-utils:9.2.1")
-        implementation("at.favre.lib:bcrypt:0.10.2")
+        implementation(files("libs/bcrypt-0.10.2.jar"))
 
         // JUnit
         testImplementation(platform("org.junit:junit-bom:5.9.2"))
