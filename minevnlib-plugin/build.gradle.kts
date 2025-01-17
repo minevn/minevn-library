@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
     implementation("net.wesjd:anvilgui:1.10.4-SNAPSHOT")
+    implementation("at.favre.lib:bcrypt:0.10.2")
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
