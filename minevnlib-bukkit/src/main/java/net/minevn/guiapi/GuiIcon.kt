@@ -2,9 +2,9 @@ package net.minevn.guiapi
 
 import com.cryptomorin.xseries.XMaterial
 import net.minevn.libs.bukkit.color
+import net.minevn.libs.bukkit.hideAll
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.ItemStack
 
 class GuiIcon(
@@ -24,7 +24,7 @@ class GuiIcon(
             if (glow) {
                 addEnchant(Enchantment.DURABILITY, 1, true)
             }
-            addItemFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES)
+            hideAll()
         }
     }
 

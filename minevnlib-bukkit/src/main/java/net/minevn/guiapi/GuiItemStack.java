@@ -66,7 +66,7 @@ public class GuiItemStack {
         if (glow) {
             im.addEnchant(Enchantment.DURABILITY, 1, true);
         }
-        im.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
+        hideAll(im);
         item.setItemMeta(im);
     }
 
@@ -85,7 +85,7 @@ public class GuiItemStack {
             im.addEnchant(Enchantment.DURABILITY, 1, true);
         }
         im.setUnbreakable(true);
-        im.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS);
+        hideAll(im);
         item.setItemMeta(im);
     }
 
@@ -108,7 +108,7 @@ public class GuiItemStack {
         if (lores != null && lores.length > 0)
             im.setLore(Arrays.asList(lores));
         im.setUnbreakable(true);
-        im.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ATTRIBUTES);
+        hideAll(im);
         item.setItemMeta(im);
     }
 
@@ -127,5 +127,11 @@ public class GuiItemStack {
 
     public ItemStack getItem() {
         return item;
+    }
+
+    private static void hideAll(ItemMeta itemMeta) {
+        for (ItemFlag flag : ItemFlag.values()) {
+            itemMeta.addItemFlags(flag);
+        }
     }
 }

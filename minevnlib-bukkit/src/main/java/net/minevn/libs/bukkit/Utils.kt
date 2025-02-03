@@ -4,6 +4,8 @@ import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.meta.ItemMeta
 
 fun List<String>.color() = map { it.color() }
 
@@ -73,4 +75,8 @@ fun String.asLocation() = split(",").let {
     val yaw = it[4].toFloat()
     val pitch = it[5].toFloat()
     Location(world, x, y, z, yaw, pitch)
+}
+
+fun ItemMeta.hideAll() {
+    ItemFlag.entries.forEach { addItemFlags(it) }
 }
