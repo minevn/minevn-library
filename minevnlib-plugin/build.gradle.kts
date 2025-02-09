@@ -63,6 +63,7 @@ tasks {
         relocate("com.cryptomorin.xseries", "net.minevn.libs.xseries")
         relocate("com.cronutils", "net.minevn.libs.cronutils")
         exclude("META-INF/versions/21/org/h2/util/Utils21.class")
+        exclude("META-INF/*.RSA", "META-INF/*.DSA", "META-INF/*.SF")
     }
 
     // shadow with kotlin
