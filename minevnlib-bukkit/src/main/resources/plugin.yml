@@ -3,4 +3,4 @@ author: MineVN
 main: net.minevn.libs.bukkit.MineVNLib
 version: '${version}'
 api-version: 1.13
-softdepend: [eco]
+softdepend: [eco, ajLeaderboards]
