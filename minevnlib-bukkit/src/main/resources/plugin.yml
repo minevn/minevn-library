@@ -1,4 +1,5 @@
 name: MineVNLib
+folia-supported: true
 author: MineVN
 main: net.minevn.libs.bukkit.MineVNLib
 version: '${version}'

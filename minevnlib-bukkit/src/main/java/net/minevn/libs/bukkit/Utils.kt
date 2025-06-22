@@ -11,11 +11,15 @@ fun List<String>.color() = map { it.color() }
 
 fun String.color(): String = ChatColor.translateAlternateColorCodes('&', this)
 
-fun runSync(action: Runnable) {
+fun runSync(r: Runnable) {
     if (Bukkit.isPrimaryThread()) {
-        action.run()
+        r.run()
     } else {
-        Bukkit.getScheduler().runTask(MineVNLib.instance, action)
+        if (FoliaUtils.isFolia()) {
+            FoliaUtils.runGlobal(MineVNLib.instance, r)
+        } else {
+            Bukkit.getScheduler().runTask(MineVNLib.instance, r)
+        }
     }
 }
 
