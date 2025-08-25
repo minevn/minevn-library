@@ -45,7 +45,7 @@ publishing {
 }
 
 configurations {
-    create("shadowNoKotlin") {
+    register("shadowNoKotlin") {
         extendsFrom(configurations.getByName("runtimeClasspath"))
         exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib")
     }
