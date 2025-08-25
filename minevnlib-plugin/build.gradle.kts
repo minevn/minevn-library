@@ -74,13 +74,13 @@ tasks {
 
     // shadow without kotlin
     val noKotlinConfig = configurations.getByName("shadowNoKotlin")
-    val shadowNoKotlin by creating(ShadowJar::class) {
+    val shadowNoKotlin by registering(ShadowJar::class) {
         configurations = listOf(noKotlinConfig)
         changePackages()
         archiveFileName.set("$jarName-no-kotlin.jar")
     }
 
-    val customCopy by creating(Task::class) {
+    val customCopy by registering(Task::class) {
         dependsOn(shadowJar, shadowNoKotlin)
 
         val path = project.properties["shadowPath"]
