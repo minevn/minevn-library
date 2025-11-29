@@ -94,6 +94,26 @@ fun ZonedDateTime.getNextSchedule(cronExpression: String) = getNextSchedule(cron
 
 fun Long.toZonedDateTime() = ZonedDateTime.ofInstant(Instant.ofEpochSecond(this), ZoneId.systemDefault())!!
 
+/**
+ * Convert màu từ mã hex sang Int, thích hợp khi làm việc với webhook Discord:
+ * - Chấp nhận dạng "#RRGGBB" hoặc "RRGGBB" (không phân biệt hoa thường)
+ * - Nếu sai định dạng -> trả về 0xFFFFFF (trắng)
+ */
+fun parseHexColorToInt(value: String): Int {
+    val raw = value.trim()
+    val match = Regex("^#?([0-9a-fA-F]{6})$").matchEntire(raw)
+    val hex = match?.groupValues?.get(1)
+    return if (hex != null) {
+        try {
+            hex.toInt(16)
+        } catch (_: Exception) {
+            0xFFFFFF
+        }
+    } else {
+        0xFFFFFF
+    }
+}
+
 private val gson: Gson = Gson()
 fun Any.toJson() = gson.toJson(this)!!
 fun String.parseJson() = JsonParser.parseString(this)!!
