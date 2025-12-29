@@ -6,14 +6,14 @@ plugins {
 }
 
 repositories {
-    maven("https://repo.codemc.io/repository/maven-snapshots/")
+    maven("https://mvn.wesjd.net/")
 }
 
 dependencies {
     implementation(project(":minevnlib-master"))
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
-    implementation("net.wesjd:anvilgui:1.10.8-SNAPSHOT")
+    implementation("net.wesjd:anvilgui:1.10.11-SNAPSHOT")
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
