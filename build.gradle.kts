@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "1.2.1"
+    version = "1.2.2-beta"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -24,6 +24,7 @@ allprojects {
         implementation("org.mariadb.jdbc:mariadb-java-client:3.4.1") { exclude("*") }
 
         // ohthers
+        implementation(kotlin("reflect"))
         implementation("com.google.code.gson:gson:2.10.1")
         implementation("com.cronutils:cron-utils:9.2.1")
         implementation("at.favre.lib:bcrypt:0.10.2")
