@@ -14,6 +14,7 @@ allprojects {
 
     repositories {
         mavenCentral()
+        maven("https://mvn.wesjd.net/") // anvil gui
     }
 
     dependencies {
