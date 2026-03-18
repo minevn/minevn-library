@@ -49,6 +49,43 @@ object FoliaUtils {
     }
 
     /**
+     * Run a task asynchronously after a delay
+     */
+    @JvmStatic
+    fun runAsyncLater(plugin: JavaPlugin, runnable: Runnable, delay: Long): BukkitTask {
+        return if (isFolia()) {
+            val scheduler = Bukkit.getServer().javaClass.getMethod("getAsyncScheduler").invoke(Bukkit.getServer())
+            val method = scheduler.javaClass.getMethod(
+                "runDelayed",
+                Plugin::class.java,
+                java.util.function.Consumer::class.java,
+                Long::class.javaPrimitiveType,
+                TimeUnit::class.java
+            )
+            val task = method.invoke(
+                scheduler,
+                plugin,
+                java.util.function.Consumer<Any> { runnable.run() },
+                delay * 50L,
+                TimeUnit.MILLISECONDS
+            )
+            object : BukkitTask {
+                override fun getTaskId(): Int = -1
+                override fun isSync(): Boolean = false
+                override fun isCancelled(): Boolean = false
+                override fun getOwner(): Plugin = plugin
+                override fun cancel() {
+                    val method = task.javaClass.getMethod("cancel")
+                    method.isAccessible = true
+                    method.invoke(task)
+                }
+            }
+        } else {
+            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, runnable, delay)
+        }
+    }
+
+    /**
      * Run a task on the global region scheduler
      */
     @JvmStatic
