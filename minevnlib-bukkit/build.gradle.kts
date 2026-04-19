@@ -7,6 +7,7 @@ dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT")
 
     // other libs
+    implementation("dev.dejvokep:boosted-yaml:1.3.6")
     implementation("com.github.cryptomorin:XSeries:13.6.0") { isTransitive = false }
     implementation("net.wesjd:anvilgui:1.10.11-SNAPSHOT")
 }

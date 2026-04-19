@@ -1,5 +1,11 @@
 package net.minevn.libs.bukkit
 
+import dev.dejvokep.boostedyaml.YamlDocument
+import dev.dejvokep.boostedyaml.settings.dumper.DumperSettings
+import dev.dejvokep.boostedyaml.settings.general.GeneralSettings
+import dev.dejvokep.boostedyaml.settings.loader.LoaderSettings
+import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
+import dev.dejvokep.boostedyaml.settings.updater.versioning.BasicVersioning
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
@@ -24,8 +30,23 @@ open class FileConfig(val plugin: JavaPlugin, val name: String) {
     }
 
     private fun initYaml() {
+        plugin.getResource("$name.yml").use {
+            checkNotNull(it) { "Could not load default resource $name.yml from plugin jar" }
+            YamlDocument.create(
+                file,
+                it,
+                GeneralSettings.DEFAULT,
+                LoaderSettings.builder().setAutoUpdate(true).build(),
+                DumperSettings.DEFAULT,
+                UpdaterSettings.builder()
+                    .setVersioning(BasicVersioning("config-version"))
+                    .build()
+            )
+        }
+
         config = YamlConfiguration.loadConfiguration(file)
         plugin.getResource("$name.yml").use {
+            checkNotNull(it) { "Could not load default resource $name.yml from plugin jar" }
             baseConfig = YamlConfiguration.loadConfiguration(InputStreamReader(it, StandardCharsets.UTF_8))
             config.addDefaults(baseConfig)
         }
