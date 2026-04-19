@@ -8,6 +8,7 @@ import dev.dejvokep.boostedyaml.settings.updater.UpdaterSettings
 import dev.dejvokep.boostedyaml.settings.updater.versioning.BasicVersioning
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.java.JavaPlugin
+import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
@@ -30,8 +31,12 @@ open class FileConfig(val plugin: JavaPlugin, val name: String) {
     }
 
     private fun initYaml() {
-        plugin.getResource("$name.yml").use {
+        val defaults = plugin.getResource("$name.yml").use {
             checkNotNull(it) { "Could not load default resource $name.yml from plugin jar" }
+            it.readBytes()
+        }
+
+        ByteArrayInputStream(defaults).use {
             YamlDocument.create(
                 file,
                 it,
@@ -41,12 +46,11 @@ open class FileConfig(val plugin: JavaPlugin, val name: String) {
                 UpdaterSettings.builder()
                     .setVersioning(BasicVersioning("config-version"))
                     .build()
-            )
+            ).save()
         }
 
         config = YamlConfiguration.loadConfiguration(file)
-        plugin.getResource("$name.yml").use {
-            checkNotNull(it) { "Could not load default resource $name.yml from plugin jar" }
+        ByteArrayInputStream(defaults).use {
             baseConfig = YamlConfiguration.loadConfiguration(InputStreamReader(it, StandardCharsets.UTF_8))
             config.addDefaults(baseConfig)
         }
