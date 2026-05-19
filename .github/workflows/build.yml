@@ -15,7 +15,7 @@ jobs:
       - uses: actions/setup-java@v4.0.0
         with:
           distribution: temurin
-          java-version: 8
+          java-version: 25
           cache: "gradle"
       - name: Build MineVNLib & get plugin informations
         run: |
