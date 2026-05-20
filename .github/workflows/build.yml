@@ -9,13 +9,13 @@ jobs:
     if: (github.event_name == 'pull_request' && github.event.action == 'labeled') || github.event_name != 'pull_request' || github.repository != github.event.pull_request.head.repo.full_name
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
       - name: Validate Gradle Wrapper checksum
         run: echo "7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172  gradle/wrapper/gradle-wrapper.jar" | sha256sum --check
-      - uses: actions/setup-java@v4.0.0
+      - uses: actions/setup-java@v5.0.0
         with:
           distribution: temurin
-          java-version: 8
+          java-version: 25
           cache: "gradle"
       - name: Build MineVNLib & get plugin informations
         run: |
@@ -28,7 +28,7 @@ jobs:
           echo "version=$(./gradlew :minevnlib-plugin:printVersion | awk 'NR==3')" >> $GITHUB_OUTPUT
         id: plugin
       - name: Upload build artifact
-        uses: actions/upload-artifact@v4.3.1
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: "MineVNLib"
           path: ./target/*.jar
