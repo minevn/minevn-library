@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "26.1-beta"
+    version = "26.1"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
