@@ -30,7 +30,7 @@ allprojects {
         implementation("at.favre.lib:bcrypt:0.10.2")
 
         // JUnit
-        testImplementation(platform("org.junit:junit-bom:5.9.2"))
+        testImplementation(platform("org.junit:junit-bom:6.1.0"))
         testImplementation("org.junit.jupiter:junit-jupiter")
         testImplementation("io.mockk:mockk:1.14.9")
     }
