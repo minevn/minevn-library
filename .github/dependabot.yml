@@ -1,0 +1,27 @@
+version: 2
+registries:
+  wesjd-maven:
+    type: maven-repository
+    url: https://mvn.wesjd.net/
+
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/minevnlib-bukkit"
+
+    registries:
+      - wesjd-maven
+
+    schedule:
+      interval: "daily"
+      time: "07:00"
+      timezone: "Asia/Ho_Chi_Minh"
+
+    allow:
+      - dependency-name: "net.wesjd:anvilgui"
+      - dependency-name: "com.github.cryptomorin:XSeries"
+
+    commit-message:
+      prefix: "libs"
+      include: "scope"
+
+    open-pull-requests-limit: 10
