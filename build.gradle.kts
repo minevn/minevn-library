@@ -32,7 +32,7 @@ allprojects {
         // JUnit
         testImplementation(platform("org.junit:junit-bom:5.9.2"))
         testImplementation("org.junit.jupiter:junit-jupiter")
-        testImplementation("io.mockk:mockk:1.13.7")
+        testImplementation("io.mockk:mockk:1.14.9")
     }
 
     tasks {
