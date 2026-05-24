@@ -19,7 +19,7 @@ allprojects {
 
     dependencies {
         // database
-        implementation("com.zaxxer:HikariCP:4.0.3")
+        implementation("com.zaxxer:HikariCP:7.0.2")
         implementation("com.h2database:h2:2.1.214")
         implementation("org.mariadb.jdbc:mariadb-java-client:3.4.1") { exclude("*") }
 
