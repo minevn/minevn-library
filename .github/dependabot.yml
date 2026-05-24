@@ -1,0 +1,26 @@
+version: 2
+registries:
+  wesjd-maven:
+    type: maven-repository
+    url: https://mvn.wesjd.net/
+
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+
+    registries:
+      - wesjd-maven
+
+    schedule:
+      interval: "daily"
+      time: "07:00"
+      timezone: "Asia/Ho_Chi_Minh"
+
+    ignore:
+      - dependency-name: "net.md-5:bungeecord-api"
+
+    commit-message:
+      prefix: "libs"
+      include: "scope"
+
+    open-pull-requests-limit: 20
