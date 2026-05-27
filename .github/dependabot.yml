@@ -18,7 +18,7 @@ updates:
 
     ignore:
       - dependency-name: "net.md-5:bungeecord-api"
-      - dependency-name: "com.h2database:h2:2.1.214"
+      - dependency-name: "com.h2database:h2"
 
     commit-message:
       prefix: "libs"
