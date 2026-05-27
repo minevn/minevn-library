@@ -5,7 +5,7 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "26.1"
+    version = "26.1.1"
 
     apply(plugin = "java")
     apply(plugin = "org.jetbrains.kotlin.jvm")
@@ -18,7 +18,7 @@ allprojects {
     dependencies {
         // database
         implementation("com.zaxxer:HikariCP:7.0.2")
-        implementation("com.h2database:h2:2.4.240")
+        implementation("com.h2database:h2:2.1.214")
         implementation("org.mariadb.jdbc:mariadb-java-client:3.5.8") { exclude("*") }
 
         // ohthers
