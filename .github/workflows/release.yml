@@ -1,19 +1,13 @@
-name: Build
+name: Upload JARs to Release
 on:
-  workflow_dispatch:
-  pull_request:
-  push:
-    branches:
-      - master
-
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: true
+  release:
+    types: [published]
 
 jobs:
-  build:
+  build-and-upload:
     runs-on: ubuntu-latest
-    if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: gradle/actions/wrapper-validation@v6
@@ -31,8 +25,7 @@ jobs:
           cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
           cp ./minevnlib-plugin/build/libs/MineVNLib-no-kotlin.jar ./target/MineVNLib-no-kotlin.jar
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v7.0.1
+      - name: Attach JARs to the Release
+        uses: softprops/action-gh-release@v1
         with:
-          name: "MineVNLib"
-          path: ./target/*.jar
+          files: ./target/*.jar
