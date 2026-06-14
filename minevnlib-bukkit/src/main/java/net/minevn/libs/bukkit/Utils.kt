@@ -1,6 +1,5 @@
 package net.minevn.libs.bukkit
 
-import com.viaversion.viaversion.api.Via
 import org.bukkit.Bukkit
 import org.bukkit.ChatColor
 import org.bukkit.Location
@@ -35,8 +34,13 @@ fun Player.sendMessages(messages: Array<String>) = messages.forEach { sendMessag
 
 fun Player.getClientProtocolVersion(): Int {
     try {
-        return Via.getAPI().getPlayerVersion(uniqueId)
-    } catch (e: NoClassDefFoundError) {
+        val viaClass = Class.forName("com.viaversion.viaversion.api.Via")
+        val api = viaClass.getMethod("getAPI").invoke(null)
+        val getPlayerVersion = api.javaClass.getMethod("getPlayerVersion", java.util.UUID::class.java)
+        return (getPlayerVersion.invoke(api, uniqueId) as Number).toInt()
+    } catch (e: ClassNotFoundException) {
+        throw ViaVersionNotInstalledException(e)
+    } catch (e: ReflectiveOperationException) {
         throw ViaVersionNotInstalledException(e)
     } catch (e: IllegalStateException) {
         throw ViaVersionNotInstalledException(e)
