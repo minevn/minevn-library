@@ -6,9 +6,10 @@ import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.meta.ItemMeta
+import java.util.UUID
 
 class ViaVersionNotInstalledException(cause: Throwable? = null) : IllegalStateException(
-    "ViaVersion is not installed or enabled.",
+    "ViaVersion not found.",
     cause,
 )
 
@@ -36,10 +37,8 @@ fun Player.getClientProtocolVersion(): Int {
     try {
         val viaClass = Class.forName("com.viaversion.viaversion.api.Via")
         val api = viaClass.getMethod("getAPI").invoke(null)
-        val getPlayerVersion = api.javaClass.getMethod("getPlayerVersion", java.util.UUID::class.java)
+        val getPlayerVersion = api.javaClass.getMethod("getPlayerVersion", UUID::class.java)
         return (getPlayerVersion.invoke(api, uniqueId) as Number).toInt()
-    } catch (e: ClassNotFoundException) {
-        throw ViaVersionNotInstalledException(e)
     } catch (e: ReflectiveOperationException) {
         throw ViaVersionNotInstalledException(e)
     } catch (e: IllegalStateException) {
