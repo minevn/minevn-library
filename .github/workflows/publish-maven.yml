@@ -1,0 +1,26 @@
+name: Publish Maven
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: gradle/actions/wrapper-validation@v6
+      - uses: actions/setup-java@v5.0.0
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: "gradle"
+      - name: Publish to MineVN Maven repo
+        env:
+          MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+        run: |
+          chmod +x ./gradlew
+          ./gradlew :minevnlib-plugin:publishMavenJavaPublicationToMinevnRepository

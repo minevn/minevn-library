@@ -30,13 +30,13 @@ publishing {
         }
     }
     repositories {
+        mavenLocal()
         maven {
-            val mavenPath = project.properties["mavenPath"]
-            url = if (mavenPath != null) {
-                println("install to: $mavenPath")
-                uri(mavenPath)
-            } else {
-                uri("${System.getProperty("user.home")}/.m2/repository")
+            name = "minevn"
+            url = uri("https://repo.minevn.net/releases")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
             }
         }
     }
