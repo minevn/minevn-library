@@ -1,28 +1,11 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.GradleException
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes
-import java.io.File
-import java.util.zip.ZipEntry
-import java.util.zip.ZipFile
-import java.util.zip.ZipOutputStream
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath("org.ow2.asm:asm:9.9.1")
-    }
-}
 
 plugins {
     id("com.gradleup.shadow") version "9.4.1"
     id("maven-publish")
 }
+
+apply(from = "rewrite.gradle.kts")
 
 repositories {
 }
@@ -81,17 +64,6 @@ tasks {
         relocate("com.cronutils", "net.minevn.libs.cronutils")
         exclude("META-INF/versions/21/org/h2/util/Utils21.class")
         exclude("META-INF/*.RSA", "META-INF/*.DSA", "META-INF/*.SF")
-
-        doLast {
-            rewriteClassVersion(
-                archiveFile.get().asFile,
-                setOf(
-                    "net/minevn/libs/anvilgui/version/Wrapper26_R1.class",
-                    $$"net/minevn/libs/anvilgui/version/Wrapper26_R1$AnvilContainer.class"
-                ),
-                Opcodes.V17
-            )
-        }
     }
 
     // shadow with kotlin
@@ -130,64 +102,5 @@ tasks {
 
     assemble {
         dependsOn(shadowJar, shadowNoKotlin, customCopy)
-    }
-}
-
-fun rewriteClassVersion(jarFile: File, classEntries: Set<String>, targetVersion: Int) {
-    val tempFile = File.createTempFile(jarFile.nameWithoutExtension, ".jar", jarFile.parentFile)
-    val rewrittenEntries = mutableSetOf<String>()
-    try {
-        ZipFile(jarFile).use { zipFile ->
-            ZipOutputStream(tempFile.outputStream().buffered()).use { zipOutput ->
-                val entries = zipFile.entries()
-                while (entries.hasMoreElements()) {
-                    val entry = entries.nextElement()
-                    val newEntry = ZipEntry(entry.name)
-                    zipOutput.putNextEntry(newEntry)
-
-                    if (!entry.isDirectory) {
-                        val bytes = zipFile.getInputStream(entry).use { input ->
-                            input.readBytes()
-                        }
-
-                        if (entry.name in classEntries) {
-                            val classReader = ClassReader(bytes)
-                            val classWriter = ClassWriter(0)
-                            val classVisitor = object : ClassVisitor(Opcodes.ASM9, classWriter) {
-                                override fun visit(
-                                    version: Int,
-                                    access: Int,
-                                    name: String?,
-                                    signature: String?,
-                                    superName: String?,
-                                    interfaces: Array<out String>?
-                                ) {
-                                    super.visit(targetVersion, access, name, signature, superName, interfaces)
-                                }
-                            }
-
-                            classReader.accept(classVisitor, 0)
-                            zipOutput.write(classWriter.toByteArray())
-                            rewrittenEntries.add(entry.name)
-                        } else {
-                            zipOutput.write(bytes)
-                        }
-                    }
-
-                    zipOutput.closeEntry()
-                }
-            }
-        }
-
-        val missingEntries = classEntries - rewrittenEntries
-        if (missingEntries.isNotEmpty()) {
-            throw GradleException(
-                "Failed to rewrite class version in ${jarFile.name}. Missing entries: ${missingEntries.joinToString()}"
-            )
-        }
-
-        tempFile.copyTo(jarFile, overwrite = true)
-    } finally {
-        tempFile.delete()
     }
 }
