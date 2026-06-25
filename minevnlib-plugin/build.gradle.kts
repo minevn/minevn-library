@@ -1,4 +1,5 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.GradleException
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.ClassWriter
@@ -134,47 +135,59 @@ tasks {
 
 fun rewriteClassVersion(jarFile: File, classEntries: Set<String>, targetVersion: Int) {
     val tempFile = File.createTempFile(jarFile.nameWithoutExtension, ".jar", jarFile.parentFile)
-    ZipFile(jarFile).use { zipFile ->
-        ZipOutputStream(tempFile.outputStream().buffered()).use { zipOutput ->
-            val entries = zipFile.entries()
-            while (entries.hasMoreElements()) {
-                val entry = entries.nextElement()
-                val newEntry = ZipEntry(entry.name)
-                zipOutput.putNextEntry(newEntry)
+    val rewrittenEntries = mutableSetOf<String>()
+    try {
+        ZipFile(jarFile).use { zipFile ->
+            ZipOutputStream(tempFile.outputStream().buffered()).use { zipOutput ->
+                val entries = zipFile.entries()
+                while (entries.hasMoreElements()) {
+                    val entry = entries.nextElement()
+                    val newEntry = ZipEntry(entry.name)
+                    zipOutput.putNextEntry(newEntry)
 
-                if (!entry.isDirectory) {
-                    val bytes = zipFile.getInputStream(entry).use { input ->
-                        input.readBytes()
-                    }
-
-                    if (entry.name in classEntries) {
-                        val classReader = ClassReader(bytes)
-                        val classWriter = ClassWriter(0)
-                        val classVisitor = object : ClassVisitor(Opcodes.ASM9, classWriter) {
-                            override fun visit(
-                                version: Int,
-                                access: Int,
-                                name: String?,
-                                signature: String?,
-                                superName: String?,
-                                interfaces: Array<out String>?
-                            ) {
-                                super.visit(targetVersion, access, name, signature, superName, interfaces)
-                            }
+                    if (!entry.isDirectory) {
+                        val bytes = zipFile.getInputStream(entry).use { input ->
+                            input.readBytes()
                         }
 
-                        classReader.accept(classVisitor, 0)
-                        zipOutput.write(classWriter.toByteArray())
-                    } else {
-                        zipOutput.write(bytes)
-                    }
-                }
+                        if (entry.name in classEntries) {
+                            val classReader = ClassReader(bytes)
+                            val classWriter = ClassWriter(0)
+                            val classVisitor = object : ClassVisitor(Opcodes.ASM9, classWriter) {
+                                override fun visit(
+                                    version: Int,
+                                    access: Int,
+                                    name: String?,
+                                    signature: String?,
+                                    superName: String?,
+                                    interfaces: Array<out String>?
+                                ) {
+                                    super.visit(targetVersion, access, name, signature, superName, interfaces)
+                                }
+                            }
 
-                zipOutput.closeEntry()
+                            classReader.accept(classVisitor, 0)
+                            zipOutput.write(classWriter.toByteArray())
+                            rewrittenEntries.add(entry.name)
+                        } else {
+                            zipOutput.write(bytes)
+                        }
+                    }
+
+                    zipOutput.closeEntry()
+                }
             }
         }
-    }
 
-    tempFile.copyTo(jarFile, overwrite = true)
-    tempFile.delete()
+        val missingEntries = classEntries - rewrittenEntries
+        if (missingEntries.isNotEmpty()) {
+            throw GradleException(
+                "Failed to rewrite class version in ${jarFile.name}. Missing entries: ${missingEntries.joinToString()}"
+            )
+        }
+
+        tempFile.copyTo(jarFile, overwrite = true)
+    } finally {
+        tempFile.delete()
+    }
 }
