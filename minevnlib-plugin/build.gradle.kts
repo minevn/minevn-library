@@ -30,7 +30,6 @@ publishing {
         }
     }
     repositories {
-        mavenLocal()
         maven {
             name = "minevn"
             url = uri("https://repo.minevn.net/releases")
