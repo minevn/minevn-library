@@ -1,6 +1,7 @@
 package net.minevn.guiapi
 
 import net.minevn.libs.bukkit.color
+import net.minevn.libs.bukkit.FoliaUtils
 import net.minevn.libs.bukkit.runSync
 import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.entity.Player
@@ -41,5 +42,12 @@ abstract class ConfiguredUI(
 
     fun getConfig() = getConfig(configPath, plugin)
 
-    fun open() = runSync { viewer?.openInventory(inventory) }
+    fun open() {
+        val player = viewer ?: return
+        if (FoliaUtils.isFolia()) {
+            FoliaUtils.runAtEntity(plugin, player) { player.openInventory(inventory) }
+        } else {
+            runSync { player.openInventory(inventory) }
+        }
+    }
 }
