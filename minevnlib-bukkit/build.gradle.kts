@@ -8,7 +8,7 @@ dependencies {
     compileOnly("com.destroystokyo.paper:paper-api:1.13.2-R0.1-SNAPSHOT")
 
     // other libs
-    implementation("com.github.cryptomorin:XSeries:13.7.0") { isTransitive = false }
+    implementation("com.github.cryptomorin:XSeries:13.7.1") { isTransitive = false }
     implementation("net.wesjd:anvilgui:1.10.13-SNAPSHOT")
     compileOnly("com.viaversion:viaversion-api:5.9.1")
 }
