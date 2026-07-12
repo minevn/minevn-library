@@ -6,6 +6,12 @@ import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
 import org.bukkit.inventory.meta.ItemMeta
+import java.util.UUID
+
+class ViaVersionNotInstalledException(cause: Throwable? = null) : IllegalStateException(
+    "ViaVersion not found.",
+    cause,
+)
 
 fun List<String>.color() = map { it.color() }
 
@@ -26,6 +32,19 @@ fun runSync(r: Runnable) {
 fun Player.sendMessages(messages: List<String>) = messages.forEach { sendMessage(it) }
 
 fun Player.sendMessages(messages: Array<String>) = messages.forEach { sendMessage(it) }
+
+fun Player.getClientProtocolVersion(): Int {
+    try {
+        val viaClass = Class.forName("com.viaversion.viaversion.api.Via")
+        val api = viaClass.getMethod("getAPI").invoke(null)
+        val getPlayerVersion = api.javaClass.getMethod("getPlayerVersion", UUID::class.java)
+        return (getPlayerVersion.invoke(api, uniqueId) as Number).toInt()
+    } catch (e: ReflectiveOperationException) {
+        throw ViaVersionNotInstalledException(e)
+    } catch (e: IllegalStateException) {
+        throw ViaVersionNotInstalledException(e)
+    }
+}
 
 val colorCodes = "abcdefklmr0123456789".toList()
 

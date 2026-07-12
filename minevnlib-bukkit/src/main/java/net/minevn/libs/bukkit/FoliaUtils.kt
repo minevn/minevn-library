@@ -1,6 +1,7 @@
 package net.minevn.libs.bukkit
 
 import org.bukkit.Bukkit
+import org.bukkit.entity.Entity
 import org.bukkit.plugin.Plugin
 import org.bukkit.plugin.java.JavaPlugin
 import org.bukkit.scheduler.BukkitTask
@@ -155,6 +156,39 @@ object FoliaUtils {
             wrapTask(plugin, task, true)
         } else {
             Bukkit.getScheduler().runTaskTimer(plugin, runnable, delay, period)
+        }
+    }
+
+    /**
+     * Run a task on the entity's owning region scheduler
+     */
+    @JvmStatic
+    fun runAtEntity(plugin: JavaPlugin, entity: Entity, runnable: Runnable): BukkitTask {
+        return if (isFolia()) {
+            val scheduler = entity.javaClass.getMethod("getScheduler").invoke(entity)
+            val method = scheduler.javaClass.getMethod(
+                "run",
+                Plugin::class.java,
+                Consumer::class.java,
+                Runnable::class.java
+            )
+            val task = method.invoke(scheduler, plugin, Consumer<Any> { runnable.run() }, null)
+            object : BukkitTask {
+                override fun getTaskId(): Int = -1
+                override fun isSync(): Boolean = true
+                override fun isCancelled(): Boolean = false
+                override fun getOwner(): Plugin = plugin
+                override fun cancel() {
+                    if (task == null) {
+                        return
+                    }
+                    val method = task.javaClass.getMethod("cancel")
+                    method.isAccessible = true
+                    method.invoke(task)
+                }
+            }
+        } else {
+            Bukkit.getScheduler().runTask(plugin, runnable)
         }
     }
 
