@@ -28,7 +28,7 @@ allprojects {
         implementation("at.favre.lib:bcrypt:0.10.2")
 
         // JUnit
-        testImplementation(platform("org.junit:junit-bom:6.1.0"))
+        testImplementation(platform("org.junit:junit-bom:6.1.2"))
         testImplementation("org.junit.jupiter:junit-jupiter")
         testImplementation("io.mockk:mockk:1.14.9")
     }
