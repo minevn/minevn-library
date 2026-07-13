@@ -5,6 +5,8 @@ plugins {
     id("maven-publish")
 }
 
+apply(from = "rewrite.gradle.kts")
+
 repositories {
 }
 
