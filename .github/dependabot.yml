@@ -16,9 +16,9 @@ updates:
       time: "07:00"
       timezone: "Asia/Ho_Chi_Minh"
 
-    ignore:
-      - dependency-name: "net.md-5:bungeecord-api"
-      - dependency-name: "com.h2database:h2"
+    allow:
+      - dependency-name: "com.github.cryptomorin:XSeries"
+      - dependency-name: "net.wesjd:anvilgui"
 
     commit-message:
       prefix: "libs"
