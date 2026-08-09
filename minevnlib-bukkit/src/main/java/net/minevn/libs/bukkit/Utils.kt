@@ -5,8 +5,9 @@ import org.bukkit.ChatColor
 import org.bukkit.Location
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemFlag
+import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.ItemMeta
-import java.util.UUID
+import java.util.*
 
 class ViaVersionNotInstalledException(cause: Throwable? = null) : IllegalStateException(
     "ViaVersion not found.",
@@ -102,4 +103,27 @@ fun String.asLocation() = split(",").let {
 
 fun ItemMeta.hideAll() {
     ItemFlag.entries.forEach { addItemFlags(it) }
+}
+
+/**
+ * ItemMeta.setCustomModelData chỉ có từ 1.14, trong khi thư viện biên dịch với API 1.13.2,
+ * nên phải gọi qua reflection. Bằng null nếu server cũ hơn 1.14.
+ */
+private val setCustomModelDataMethod = try {
+    ItemMeta::class.java.getMethod("setCustomModelData", Int::class.javaObjectType)
+} catch (_: NoSuchMethodException) {
+    null
+}
+
+/**
+ * Gán model cho icon theo custom model data
+ */
+fun ItemStack.setIconData(iconData: Short) = apply {
+    val method = setCustomModelDataMethod
+    if (iconData <= 0 || method == null) {
+        return@apply
+    }
+    val im = itemMeta
+    method.invoke(im, iconData.toInt())
+    itemMeta = im
 }
