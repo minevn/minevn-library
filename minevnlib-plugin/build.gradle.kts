@@ -32,6 +32,7 @@ publishing {
 
     repositories {
         maven {
+            name = "minevn"
             val mavenPath = project.properties["mavenPath"]
             url = if (mavenPath != null) {
                 println("publish to: $mavenPath")
