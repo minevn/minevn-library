@@ -1,11 +1,9 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
-    id("com.gradleup.shadow") version "9.4.1"
+    id("com.gradleup.shadow") version "8.3.11"
     id("maven-publish")
 }
-
-apply(from = "rewrite.gradle.kts")
 
 repositories {
 }
@@ -31,13 +29,19 @@ publishing {
             artifact(sourcesJar.get())
         }
     }
+
     repositories {
         maven {
-            name = "minevn"
-            url = uri("https://repo.minevn.net/releases")
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
+            val mavenPath = project.properties["mavenPath"]
+            url = if (mavenPath != null) {
+                println("publish to: $mavenPath")
+                uri(mavenPath)
+            } else {
+                credentials {
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
+                }
+                uri("https://repo.minevn.net/releases")
             }
         }
     }
