@@ -9,6 +9,7 @@ jobs:
     permissions:
       contents: read
     steps:
+      - uses: actions/checkout@v6.0.2
       - uses: ./.github/actions/setup-gradle
       - name: Publish to MineVN Maven repo
         env:

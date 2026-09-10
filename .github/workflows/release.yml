@@ -9,6 +9,7 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v6.0.2
       - uses: ./.github/actions/build-minevnlib
 
       - name: Attach JARs to the Release

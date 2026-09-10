@@ -1,10 +1,9 @@
 name: Set up Gradle
-description: Check out source and prepare Java 8 Gradle builds
+description: Prepare Java 8 Gradle builds
 
 runs:
   using: composite
   steps:
-    - uses: actions/checkout@v6.0.2
     - uses: gradle/actions/wrapper-validation@v6
     - uses: actions/setup-java@v5.0.0
       with:
