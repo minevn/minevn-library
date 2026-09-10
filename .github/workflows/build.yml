@@ -16,20 +16,7 @@ jobs:
     if: "!contains(github.event.head_commit.message, '[ci skip]') && !contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@v6.0.2
-      - uses: gradle/actions/wrapper-validation@v6
-      - uses: actions/setup-java@v5.0.0
-        with:
-          distribution: temurin
-          java-version: 17
-          cache: "gradle"
-
-      - name: Build MineVNLib
-        run: |
-          chmod +x ./gradlew
-          ./gradlew assemble
-          mkdir -p target
-          cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
-          cp ./minevnlib-plugin/build/libs/MineVNLib-no-kotlin.jar ./target/MineVNLib-no-kotlin.jar
+      - uses: ./.github/actions/build-minevnlib
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v7.0.1

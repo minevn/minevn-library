@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     `java-library`
     kotlin("jvm") version "2.3.21"
@@ -5,10 +7,10 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "26.1.3"
+    version = "26.1.4"
 
-    apply(plugin = "java")
-    apply(plugin = "org.jetbrains.kotlin.jvm")
+    pluginManager.apply("java-library")
+    pluginManager.apply("org.jetbrains.kotlin.jvm")
 
     repositories {
         mavenCentral()
@@ -17,18 +19,20 @@ allprojects {
 
     dependencies {
         // database
-        implementation("com.zaxxer:HikariCP:7.0.2")
+        implementation("com.zaxxer:HikariCP:4.0.3")
         implementation("com.h2database:h2:2.1.214")
-        implementation("org.mariadb.jdbc:mariadb-java-client:3.5.8") { exclude("*") }
+        implementation("org.mariadb.jdbc:mariadb-java-client:3.5.8") {
+            exclude("*")
+        }
 
-        // ohthers
+        // others
         implementation(kotlin("reflect"))
         implementation("com.google.code.gson:gson:2.14.0")
         implementation("com.cronutils:cron-utils:9.2.1")
         implementation("at.favre.lib:bcrypt:0.10.2")
 
         // JUnit
-        testImplementation(platform("org.junit:junit-bom:6.1.0"))
+        testImplementation(platform("org.junit:junit-bom:5.9.2"))
         testImplementation("org.junit.jupiter:junit-jupiter")
         testImplementation("io.mockk:mockk:1.14.9")
     }
@@ -40,15 +44,17 @@ allprojects {
 
         register("printVersion") {
             doLast {
-                println("${project.version}")
+                println(project.version)
             }
         }
-  
     }
 
-    kotlin {
-        jvmToolchain(17)
+    java {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
+
+    kotlin.compilerOptions.jvmTarget = JvmTarget.JVM_1_8
 
     configurations {
         testImplementation.get().extendsFrom(compileOnly.get())
