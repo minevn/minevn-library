@@ -73,7 +73,7 @@ tasks {
     // shadow with kotlin
     shadowJar {
         changePackages()
-        archiveFileName.set("$jarName.jar")
+        archiveFileName.set("$jarName-$version.jar")
     }
 
     // shadow without kotlin
@@ -81,7 +81,7 @@ tasks {
     val shadowNoKotlin by registering(ShadowJar::class) {
         configurations = listOf(noKotlinConfig)
         changePackages()
-        archiveFileName.set("$jarName-no-kotlin.jar")
+        archiveFileName.set("$jarName-no-kotlin-$version.jar")
     }
 
     val customCopy by registering(Task::class) {
