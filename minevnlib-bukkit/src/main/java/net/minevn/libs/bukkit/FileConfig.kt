@@ -37,6 +37,8 @@ open class FileConfig(val plugin: JavaPlugin, val name: String) {
         (config.getStringList(key)?.takeIf { it.isNotEmpty() } ?: baseConfig.getStringList(key))
         .color()
 
+    open fun getListAllowEmpty(key: String) = config.getStringList(key).color()
+
     open fun reload() {
         initYaml()
     }
