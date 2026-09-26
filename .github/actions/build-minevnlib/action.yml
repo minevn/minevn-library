@@ -11,5 +11,4 @@ runs:
         chmod +x ./gradlew
         ./gradlew assemble
         mkdir -p target
-        cp ./minevnlib-plugin/build/libs/MineVNLib.jar ./target/MineVNLib.jar
-        cp ./minevnlib-plugin/build/libs/MineVNLib-no-kotlin.jar ./target/MineVNLib-no-kotlin.jar
+        cp ./minevnlib-plugin/build/libs/MineVNLib-*.jar ./target/
