@@ -2,12 +2,12 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     `java-library`
-    kotlin("jvm") version "2.3.21"
+    kotlin("jvm") version "2.4.20"
 }
 
 allprojects {
     group = "net.minevn"
-    version = "26.1.4"
+    version = "26.1.5"
 
     pluginManager.apply("java-library")
     pluginManager.apply("org.jetbrains.kotlin.jvm")
