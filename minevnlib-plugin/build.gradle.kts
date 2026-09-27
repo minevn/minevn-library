@@ -92,11 +92,11 @@ tasks {
             doLast {
                 println(path)
                 copy {
-                    from("build/libs/$jarName.jar")
+                    from(shadowJar.get().archiveFile)
                     into(path)
                 }
                 copy {
-                    from("build/libs/$jarName-no-kotlin.jar")
+                    from(shadowNoKotlin.get().archiveFile)
                     into(path)
                 }
                 println("Copied")
