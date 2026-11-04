@@ -162,3 +162,35 @@ Xem [code mẫu](https://github.com/minevn/dotman/blob/master/dotman-plugin/src/
 Đang bổ sung tài liệu.
 
 Xem [code mẫu](https://github.com/MineVN/dotman/blob/master/dotman-plugin/src/main/java/net/minevn/dotman/gui/CardPriceUI.kt).
+
+### Dialog
+
+Mở dialog (tính năng của Minecraft 1.21.6) qua `DialogAPI`, dùng chung cho mọi phiên bản server:
+- Server có dialog API của Paper (Paper 1.21.7+): gọi API của Paper
+  - `clear` cần Paper 1.21.8+
+- Server cũ hơn 1.21.6 có ViaVersion 5.11.0+: dựng packet dialog qua ViaVersion, chỉ client 1.21.6+ xem được
+- Server cũ hơn 1.21.6 không có ViaVersion: ném `ViaVersionNotInstalledException`
+- Server 1.21.6+ không có dialog API của Paper (Spigot, Paper 1.21.6): ném `UnsupportedOperationException`
+
+```kotlin
+if (!DialogAPI.isSupported(player)) {
+    // fallback: chest GUI / chat
+    return
+}
+DialogAPI.show(player, NoticeDialog(
+    title = text("Đổi tên"),
+    inputs = listOf(DialogInput.Text("name", text("Tên mới"), maxLength = 16)),
+    action = DialogButton(text("Lưu"), DialogAction.Callback { response ->
+        val name = response.string("name")
+    }),
+))
+```
+
+Giới hạn:
+- Model dùng Adventure `Component`, nên cần server Paper (hoặc server có Adventure)
+- Chỉ hỗ trợ dialog `notice`, `confirmation`, `multi_action` và body `plain_message`
+- Đường ViaVersion:
+  - Callback nhận qua packet `custom_click_action` bằng cách ghi đè handler trong ViaVersion
+  - Nếu hook lỗi (thường do nâng ViaVersion), callback chuyển sang lệnh ẩn `/mvndialogcb`
+    - Lệnh bị giới hạn 256 ký tự, `show` ném `IllegalArgumentException` nếu lệnh có thể dài hơn
+  - Callback chỉ có hiệu lực với dialog đang mở mới nhất

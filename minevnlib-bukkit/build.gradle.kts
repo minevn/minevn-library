@@ -10,7 +10,12 @@ dependencies {
     // other libs
     implementation("com.github.cryptomorin:XSeries:14.0.0") { isTransitive = false }
     implementation("net.wesjd:anvilgui:1.10.13-SNAPSHOT")
-    compileOnly("com.viaversion:viaversion-api:5.9.1")
+    // dialog qua ViaVersion: api có Holder, Types, nbt, mcstructs; common có packet type + protocol 1.21.6
+    compileOnly("com.viaversion:viaversion-api:5.11.0")
+    compileOnly("com.viaversion:viaversion-common:5.11.0") { isTransitive = false }
+    // Component của model dialog, server Paper đã có sẵn
+    compileOnly("net.kyori:adventure-api:4.17.0")
+    compileOnly("net.kyori:adventure-text-serializer-gson:4.17.0")
 }
 
 tasks.processResources {

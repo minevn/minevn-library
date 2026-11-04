@@ -6,3 +6,7 @@ version: '${version}'
 api-version: 1.13
 softdepend: [eco, ViaVersion]
 loadbefore: [ajLeaderboards]
+commands:
+  # bị bắt và huỷ ở PlayerCommandPreprocessEvent, khai báo để client 1.21.6+ thấy lệnh trong command tree
+  mvndialogcb:
+    description: Internal callback command of dialogs (do not use manually).
