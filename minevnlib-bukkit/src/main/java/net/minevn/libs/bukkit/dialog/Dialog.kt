@@ -96,6 +96,8 @@ sealed class DialogInput(val key: String) {
     ) : DialogInput(key) {
         init {
             require(maxLength > 0) { "maxLength phải > 0" }
+            // codec của client từ chối, ở đường ViaVersion player sẽ bị ngắt kết nối
+            require(initial.length <= maxLength) { "initial dài hơn maxLength" }
         }
     }
 
@@ -130,7 +132,15 @@ sealed class DialogInput(val key: String) {
         val initial: Float? = null,
         val width: Int? = null,
         val labelFormat: String? = null,
-    ) : DialogInput(key)
+    ) : DialogInput(key) {
+        // codec của client từ chối, client cho phép start > end
+        init {
+            require(step == null || step > 0f) { "step phải > 0" }
+            require(initial == null || initial in minOf(start, end)..maxOf(start, end)) {
+                "initial nằm ngoài khoảng giữa start và end"
+            }
+        }
+    }
 
     companion object {
         private val KEY_PATTERN = Regex("[a-z0-9_]+")

@@ -1,7 +1,5 @@
 package net.minevn.libs.bukkit.dialog.via
 
-import com.viaversion.viaversion.api.Via
-import com.viaversion.viaversion.api.protocol.version.ProtocolVersion
 import net.minevn.libs.bukkit.MineVNLib
 import net.minevn.libs.bukkit.dialog.AfterAction
 import net.minevn.libs.bukkit.dialog.Dialog
@@ -18,11 +16,6 @@ internal class ViaDialogBackend : DialogBackend {
     private val clickHook: ViaClickHook?
 
     init {
-        // server 1.21.6+ không đi qua protocol 1.21.5 -> 1.21.6 của Via nên không dựng packet được
-        if (Via.getAPI().serverVersion.lowestSupportedProtocolVersion().newerThanOrEqualTo(ProtocolVersion.v1_21_6)) {
-            throw UnsupportedOperationException("Server 1.21.6+ cần dialog API của Paper (Paper 1.21.7+)")
-        }
-
         clickHook = ViaClickHook(plugin, sessions::onCustomClick).takeIf { it.install() }
         val callbackRoute = if (clickHook != null) "packet custom_click_action" else "lệnh /${DialogEncoder.CALLBACK_COMMAND}"
         plugin.logger.info("Callback dialog qua $callbackRoute")

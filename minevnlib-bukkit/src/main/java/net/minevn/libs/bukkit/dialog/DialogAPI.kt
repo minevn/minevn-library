@@ -60,10 +60,23 @@ object DialogAPI {
             // backend Paper biên dịch với paper-api 1.21.8 ở module khác, chỉ nạp khi server có API
             return Class.forName(PAPER_BACKEND_CLASS).getDeclaredConstructor().newInstance() as DialogBackend
         }
+        // server 1.21.6+ không đi qua protocol 1.21.5 -> 1.21.6 của Via, cài ViaVersion cũng không dùng được
+        if (isAtLeast1216(Bukkit.getBukkitVersion())) {
+            throw UnsupportedOperationException("Server 1.21.6+ cần dialog API của Paper (Paper 1.21.7+)")
+        }
         if (!Bukkit.getPluginManager().isPluginEnabled("ViaVersion")) {
             throw ViaVersionNotInstalledException()
         }
         return ViaDialogBackend().also { viaBackend = it }
+    }
+
+    /**
+     * @param bukkitVersion dạng `1.21.8-R0.1-SNAPSHOT`, hoặc `26.3-R0.1-SNAPSHOT` từ khi Minecraft đổi cách đánh số
+     */
+    internal fun isAtLeast1216(bukkitVersion: String): Boolean {
+        val numbers = bukkitVersion.substringBefore('-').split('.').map { it.toIntOrNull() ?: 0 }
+        val (major, minor, patch) = numbers + listOf(0, 0, 0)
+        return major > 1 || (major == 1 && (minor > 21 || (minor == 21 && patch >= 6)))
     }
 
     // không khởi tạo class: static field của Dialog truy cập registry
