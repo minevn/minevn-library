@@ -12,6 +12,7 @@ dependencies {
     implementation(project(":minevnlib-master"))
     implementation(project(":minevnlib-bukkit"))
     implementation(project(":minevnlib-bungee"))
+    implementation(project(":minevnlib-paper"))
 }
 
 val sourcesJar by tasks.registering(Jar::class) {
@@ -20,6 +21,7 @@ val sourcesJar by tasks.registering(Jar::class) {
     from(project(":minevnlib-master").sourceSets.main.get().allSource)
     from(project(":minevnlib-bukkit").sourceSets.main.get().allSource)
     from(project(":minevnlib-bungee").sourceSets.main.get().allSource)
+    from(project(":minevnlib-paper").sourceSets.main.get().allSource)
 }
 
 publishing {

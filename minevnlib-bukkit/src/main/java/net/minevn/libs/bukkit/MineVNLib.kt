@@ -1,6 +1,7 @@
 package net.minevn.libs.bukkit
 
 import net.minevn.guiapi.GuiListener
+import net.minevn.libs.bukkit.dialog.DialogAPI
 import org.bukkit.configuration.ConfigurationSection
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -70,5 +71,9 @@ class MineVNLib : JavaPlugin() {
         instance = this
         GuiListener.init(this)
         EventListener()
+    }
+
+    override fun onDisable() {
+        DialogAPI.disable()
     }
 }
