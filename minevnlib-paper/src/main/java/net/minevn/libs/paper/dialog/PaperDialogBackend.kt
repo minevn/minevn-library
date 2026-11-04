@@ -66,7 +66,7 @@ class PaperDialogBackend : DialogBackend {
         player.closeDialog()
     }
 
-    private fun toPaperBody(body: DialogBody) = when (body) {
+    private fun toPaperBody(body: DialogBody): PaperDialogBody = when (body) {
         is DialogBody.PlainMessage -> body.width
             ?.let { PaperDialogBody.plainMessage(body.contents, it) }
             ?: PaperDialogBody.plainMessage(body.contents)
@@ -101,7 +101,7 @@ class PaperDialogBackend : DialogBackend {
             .build()
     }
 
-    private fun toPaperButton(button: DialogButton, dialog: Dialog) = ActionButton.builder(button.label)
+    private fun toPaperButton(button: DialogButton, dialog: Dialog): ActionButton = ActionButton.builder(button.label)
         .tooltip(button.tooltip)
         .action(button.action?.let { toPaperAction(it, dialog) })
         .apply { button.width?.let { width(it) } }

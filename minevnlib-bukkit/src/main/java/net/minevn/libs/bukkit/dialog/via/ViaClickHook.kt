@@ -63,7 +63,9 @@ internal class ViaClickHook(
         }
     }
 
-    private fun protocol() = Via.getManager().protocolManager.getProtocol(Protocol1_21_5To1_21_6::class.java)
+    // khai báo kiểu rõ ràng: kiểu suy ra mang @Nullable của checkerframework, không có trên classpath
+    private fun protocol(): Protocol1_21_5To1_21_6? =
+        Via.getManager().protocolManager.getProtocol(Protocol1_21_5To1_21_6::class.java)
 
     companion object {
         /** Id của action: minevnlib:cb/<token>/<index> */
