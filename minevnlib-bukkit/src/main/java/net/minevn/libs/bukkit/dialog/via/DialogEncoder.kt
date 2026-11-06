@@ -11,6 +11,7 @@ import net.minevn.libs.bukkit.dialog.DialogBody
 import net.minevn.libs.bukkit.dialog.DialogButton
 import net.minevn.libs.bukkit.dialog.DialogInput
 import net.minevn.libs.bukkit.dialog.DialogResponse
+import net.minevn.libs.bukkit.dialog.DialogTextRun
 import net.minevn.libs.bukkit.dialog.MultiActionDialog
 import net.minevn.libs.bukkit.dialog.NoticeDialog
 
@@ -77,6 +78,70 @@ internal class DialogEncoder(
                 putString("type", "minecraft:plain_message")
                 put("contents", ComponentNbt.toNbt(body.contents))
                 body.width?.let { putInt("width", it) }
+            }
+            is DialogBody.RichText -> {
+                putString("type", "minecraft:plain_message")
+                put("contents", CompoundTag().apply {
+                    putString("text", "")
+                    put("extra", compoundList(body.runs.map(::encodeRun)))
+                })
+                body.width?.let { putInt("width", it) }
+            }
+        }
+    }
+
+    private fun encodeRun(run: DialogTextRun) = CompoundTag().apply {
+        putString("text", run.text)
+        run.font?.let { putString("font", it) }
+        run.color?.let { putString("color", "#%06x".format(it)) }
+        if (run.bold) {
+            putBoolean("bold", true)
+        }
+        if (!run.shadow) {
+            putInt("shadow_color", 0)
+        }
+        run.click?.let { put("click_event", encodeClick(it)) }
+        run.tooltip?.let { tooltip ->
+            put("hover_event", CompoundTag().apply {
+                putString("action", "show_text")
+                put("value", ComponentNbt.toNbt(tooltip))
+            })
+        }
+    }
+
+    /** Click trong chữ có format riêng, khác action của nút. */
+    private fun encodeClick(action: DialogAction) = CompoundTag().apply {
+        when (action) {
+            is DialogAction.OpenUrl -> {
+                putString("action", "open_url")
+                putString("url", action.url)
+            }
+            is DialogAction.RunCommand -> {
+                putString("action", "run_command")
+                putString("command", action.command)
+            }
+            is DialogAction.SuggestCommand -> {
+                putString("action", "suggest_command")
+                putString("command", action.command)
+            }
+            is DialogAction.CopyToClipboard -> {
+                putString("action", "copy_to_clipboard")
+                putString("value", action.value)
+            }
+            is DialogAction.Callback -> {
+                // 1 vùng click có thể trải nhiều đoạn chữ cùng callback
+                var index = handlers.indexOf(action.handler)
+                if (index < 0) {
+                    index = handlers.size
+                    handlers += action.handler
+                }
+                if (useCustomAction) {
+                    putString("action", "custom")
+                    putString("id", "${ViaClickHook.ID_PREFIX}$token/$index")
+                } else {
+                    putString("action", "run_command")
+                    putString("command", "/$CALLBACK_COMMAND $token.$index")
+                }
             }
         }
     }

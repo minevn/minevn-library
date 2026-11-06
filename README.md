@@ -166,6 +166,9 @@ Xem [code mẫu](https://github.com/MineVN/dotman/blob/master/dotman-plugin/src/
 ### Dialog
 
 Mở dialog (tính năng của Minecraft 1.21.6) qua `DialogAPI`, dùng chung cho mọi phiên bản server:
+- `DialogBody.RichText` khai báo từng đoạn chữ (font, màu, bóng, click, tooltip), dùng khi Component không đủ
+  - Adventure của server cũ chưa biết shadow color và click custom
+  - Dialog đồ hoạ của matchmaker dựng trên kiểu thân này
 - Server có dialog API của Paper (Paper 1.21.7+): gọi API của Paper
   - `clear` cần Paper 1.21.8+
 - Server cũ hơn 1.21.6 có ViaVersion 5.11.0+: dựng packet dialog qua ViaVersion, chỉ client 1.21.6+ xem được

@@ -75,7 +75,30 @@ class DialogButton(
 
 sealed class DialogBody {
     class PlainMessage(val contents: Component, val width: Int? = null) : DialogBody()
+
+    /**
+     * Như [PlainMessage] nhưng tự khai báo từng đoạn chữ, click và tooltip nằm ngay trong chữ.
+     * Dùng khi Component không đủ: Adventure của server cũ chưa biết shadow color và click custom.
+     */
+    class RichText(val runs: List<DialogTextRun>, val width: Int? = null) : DialogBody()
 }
+
+/**
+ * Một đoạn chữ của [DialogBody.RichText].
+ *
+ * @param font id font, null là font mặc định
+ * @param color màu RGB, null là mặc định
+ * @param shadow false là tắt bóng chữ
+ */
+class DialogTextRun(
+    val text: String,
+    val font: String? = null,
+    val color: Int? = null,
+    val bold: Boolean = false,
+    val shadow: Boolean = false,
+    val click: DialogAction? = null,
+    val tooltip: Component? = null,
+)
 
 sealed class DialogInput(val key: String) {
     init {

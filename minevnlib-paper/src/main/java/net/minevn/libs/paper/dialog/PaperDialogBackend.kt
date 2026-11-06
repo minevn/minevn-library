@@ -6,8 +6,14 @@ import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.audience.Audience
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.ClickCallback
 import net.kyori.adventure.text.event.ClickEvent
+import net.kyori.adventure.text.event.HoverEvent
+import net.kyori.adventure.text.format.ShadowColor
+import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 import net.minevn.libs.bukkit.MineVNLib
 import net.minevn.libs.bukkit.dialog.AfterAction
 import net.minevn.libs.bukkit.dialog.ConfirmationDialog
@@ -19,6 +25,7 @@ import net.minevn.libs.bukkit.dialog.DialogButton
 import net.minevn.libs.bukkit.dialog.DialogClickGuard
 import net.minevn.libs.bukkit.dialog.DialogInput
 import net.minevn.libs.bukkit.dialog.DialogResponse
+import net.minevn.libs.bukkit.dialog.DialogTextRun
 import net.minevn.libs.bukkit.dialog.MultiActionDialog
 import net.minevn.libs.bukkit.dialog.NoticeDialog
 import net.minevn.libs.bukkit.getClientProtocolVersion
@@ -66,7 +73,7 @@ class PaperDialogBackend : DialogBackend, Listener {
             // client không cho pause khi after_action là none
             .pause(dialog.pause && dialog.afterAction != AfterAction.NONE)
             .afterAction(DialogBase.DialogAfterAction.valueOf(dialog.afterAction.name))
-            .body(dialog.body.map(::toPaperBody))
+            .body(dialog.body.map { toPaperBody(it, dialog, showing) })
             .inputs(dialog.inputs.map(::toPaperInput))
             .build()
         val type = when (dialog) {
@@ -100,10 +107,57 @@ class PaperDialogBackend : DialogBackend, Listener {
         guard.forget(event.player.uniqueId)
     }
 
-    private fun toPaperBody(body: DialogBody): PaperDialogBody = when (body) {
+    private fun toPaperBody(body: DialogBody, dialog: Dialog, showing: Showing): PaperDialogBody = when (body) {
         is DialogBody.PlainMessage -> body.width
             ?.let { PaperDialogBody.plainMessage(body.contents, it) }
             ?: PaperDialogBody.plainMessage(body.contents)
+        is DialogBody.RichText -> {
+            val contents = Component.empty().children(body.runs.map { toPaperRun(it, dialog, showing) })
+            body.width
+                ?.let { PaperDialogBody.plainMessage(contents, it) }
+                ?: PaperDialogBody.plainMessage(contents)
+        }
+    }
+
+    private fun toPaperRun(run: DialogTextRun, dialog: Dialog, showing: Showing): Component {
+        var component: Component = Component.text(run.text)
+        run.font?.let { component = component.font(Key.key(it)) }
+        run.color?.let { component = component.color(TextColor.color(it)) }
+        if (run.bold) {
+            component = component.decorate(TextDecoration.BOLD)
+        }
+        if (!run.shadow) {
+            component = component.shadowColor(ShadowColor.none())
+        }
+        run.click?.let { component = component.clickEvent(toPaperClick(it, dialog, showing)) }
+        run.tooltip?.let { component = component.hoverEvent(HoverEvent.showText(it)) }
+        return component
+    }
+
+    private fun toPaperClick(action: DialogAction, dialog: Dialog, showing: Showing): ClickEvent = when (action) {
+        is DialogAction.OpenUrl -> ClickEvent.openUrl(action.url)
+        is DialogAction.RunCommand -> ClickEvent.runCommand(action.command)
+        is DialogAction.SuggestCommand -> ClickEvent.suggestCommand(action.command)
+        is DialogAction.CopyToClipboard -> ClickEvent.copyToClipboard(action.value)
+        is DialogAction.Callback -> ClickEvent.callback(
+            { audience -> onTextClick(action, dialog, showing, audience) },
+            ClickCallback.Options.builder().uses(ClickCallback.UNLIMITED_USES).build(),
+        )
+    }
+
+    /** Click trong chữ không gửi kèm giá trị input như nút. */
+    private fun onTextClick(action: DialogAction.Callback, dialog: Dialog, showing: Showing, audience: Audience) {
+        val player = audience as? Player ?: return
+        if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing) {
+            return
+        }
+        guard.onClick(player, dialog.afterAction)
+        try {
+            action.handler(DialogResponse(player, emptyMap()))
+        } catch (exception: Exception) {
+            MineVNLib.instance.logger.log(Level.SEVERE, "Lỗi khi xử lý callback dialog của ${player.name}", exception)
+            guard.closeWaitingScreen(player)
+        }
     }
 
     private fun toPaperInput(input: DialogInput): PaperDialogInput = when (input) {
