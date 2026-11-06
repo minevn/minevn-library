@@ -1,9 +1,9 @@
 package net.minevn.libs.bukkit.dialog.via
 
 import net.minevn.libs.bukkit.MineVNLib
-import net.minevn.libs.bukkit.dialog.AfterAction
 import net.minevn.libs.bukkit.dialog.Dialog
 import net.minevn.libs.bukkit.dialog.DialogBackend
+import net.minevn.libs.bukkit.dialog.DialogClickGuard
 import org.bukkit.entity.Player
 
 /**
@@ -12,11 +12,12 @@ import org.bukkit.entity.Player
  */
 internal class ViaDialogBackend : DialogBackend {
     private val plugin = MineVNLib.instance
-    private val sessions = CallbackSessions(plugin.logger)
+    private val guard = DialogClickGuard()
+    private val sessions = CallbackSessions(plugin.logger, guard)
     private val clickHook: ViaClickHook?
 
     init {
-        clickHook = ViaClickHook(plugin, sessions::onCustomClick).takeIf { it.install() }
+        clickHook = ViaClickHook(plugin, guard, sessions::onCustomClick).takeIf { it.install() }
         val callbackRoute = if (clickHook != null) "packet custom_click_action" else "lệnh /${DialogEncoder.CALLBACK_COMMAND}"
         plugin.logger.info("Callback dialog qua $callbackRoute")
         plugin.server.pluginManager.registerEvents(sessions, plugin)
@@ -34,10 +35,10 @@ internal class ViaDialogBackend : DialogBackend {
             sessions.remove(player)
         } else {
             sessions.put(player, CallbackSessions.Session(
-                token, separator, encoder.keys, encoder.booleans, encoder.handlers.toList(),
-                closeOnUse = dialog.afterAction != AfterAction.NONE,
+                token, separator, dialog.inputs, encoder.handlers.toList(), dialog.afterAction,
             ))
         }
+        guard.onShow(player)
         ViaDialogSender.show(player, tag)
     }
 
@@ -46,6 +47,7 @@ internal class ViaDialogBackend : DialogBackend {
         if (isSupported(player)) {
             ViaDialogSender.clear(player)
         }
+        guard.closeWaitingScreen(player)
     }
 
     /** Trả lại handler gốc của Via (cho /reload). */

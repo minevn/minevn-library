@@ -28,9 +28,6 @@ internal class DialogEncoder(
     private val useCustomAction: Boolean,
 ) {
     val keys: List<String> = dialog.inputs.map { it.key }
-    val booleans: Map<String, Pair<String, String>> = dialog.inputs
-        .filterIsInstance<DialogInput.Bool>()
-        .associate { it.key to (it.onTrue to it.onFalse) }
     val handlers = mutableListOf<(DialogResponse) -> Unit>()
 
     init {

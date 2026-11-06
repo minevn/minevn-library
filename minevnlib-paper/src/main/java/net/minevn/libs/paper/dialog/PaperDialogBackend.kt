@@ -16,6 +16,7 @@ import net.minevn.libs.bukkit.dialog.DialogAction
 import net.minevn.libs.bukkit.dialog.DialogBackend
 import net.minevn.libs.bukkit.dialog.DialogBody
 import net.minevn.libs.bukkit.dialog.DialogButton
+import net.minevn.libs.bukkit.dialog.DialogClickGuard
 import net.minevn.libs.bukkit.dialog.DialogInput
 import net.minevn.libs.bukkit.dialog.DialogResponse
 import net.minevn.libs.bukkit.dialog.MultiActionDialog
@@ -23,6 +24,11 @@ import net.minevn.libs.bukkit.dialog.NoticeDialog
 import net.minevn.libs.bukkit.getClientProtocolVersion
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerQuitEvent
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Level
 import io.papermc.paper.dialog.Dialog as PaperDialog
 import io.papermc.paper.registry.data.dialog.action.DialogAction as PaperDialogAction
@@ -32,13 +38,28 @@ import io.papermc.paper.registry.data.dialog.input.DialogInput as PaperDialogInp
 /**
  * Gửi dialog bằng dialog API của Paper (1.21.7+), đổi model của MineVNLib sang model của Paper.
  * DialogAPI nạp class này qua reflection, chỉ khi server có dialog API của Paper.
+ *
+ * Callback của Paper sống tới hết lifetime dù player đã được mở dialog khác,
+ * nên backend tự nhớ lần mở mới nhất của mỗi player, giống đường ViaVersion.
  */
-class PaperDialogBackend : DialogBackend {
+class PaperDialogBackend : DialogBackend, Listener {
+    /** Mỗi lần mở dialog là 1 object, callback của lần mở khác bị bỏ qua */
+    private class Showing
+
+    private val guard = DialogClickGuard()
+    private val showings = ConcurrentHashMap<UUID, Showing>()
+
+    init {
+        val plugin = MineVNLib.instance
+        plugin.server.pluginManager.registerEvents(this, plugin)
+    }
+
     // client cũ hơn 1.21.6 vào qua ViaBackwards không hiện được dialog gốc
     override fun isSupported(player: Player) = !Bukkit.getPluginManager().isPluginEnabled("ViaVersion") ||
         player.getClientProtocolVersion() >= PROTOCOL_1_21_6
 
     override fun show(player: Player, dialog: Dialog) {
+        val showing = Showing()
         val base = DialogBase.builder(dialog.title)
             .externalTitle(dialog.externalTitle)
             .canCloseWithEscape(dialog.canCloseWithEscape)
@@ -50,20 +71,33 @@ class PaperDialogBackend : DialogBackend {
             .build()
         val type = when (dialog) {
             is NoticeDialog -> dialog.action
-                ?.let { DialogType.notice(toPaperButton(it, dialog)) }
+                ?.let { DialogType.notice(toPaperButton(it, dialog, showing)) }
                 ?: DialogType.notice()
-            is ConfirmationDialog -> DialogType.confirmation(toPaperButton(dialog.yes, dialog), toPaperButton(dialog.no, dialog))
-            is MultiActionDialog -> DialogType.multiAction(dialog.actions.map { toPaperButton(it, dialog) })
-                .exitAction(dialog.exitAction?.let { toPaperButton(it, dialog) })
+            is ConfirmationDialog -> DialogType.confirmation(
+                toPaperButton(dialog.yes, dialog, showing),
+                toPaperButton(dialog.no, dialog, showing),
+            )
+            is MultiActionDialog -> DialogType.multiAction(dialog.actions.map { toPaperButton(it, dialog, showing) })
+                .exitAction(dialog.exitAction?.let { toPaperButton(it, dialog, showing) })
                 .columns(dialog.columns)
                 .build()
         }
+        showings[player.uniqueId] = showing
+        guard.onShow(player)
         player.showDialog(PaperDialog.create { factory -> factory.empty().base(base).type(type) })
     }
 
     // Audience#closeDialog có từ Adventure 4.24 (Paper 1.21.8)
     override fun clear(player: Player) {
+        showings.remove(player.uniqueId)
         player.closeDialog()
+        guard.closeWaitingScreen(player)
+    }
+
+    @EventHandler
+    fun onQuit(event: PlayerQuitEvent) {
+        showings.remove(event.player.uniqueId)
+        guard.forget(event.player.uniqueId)
     }
 
     private fun toPaperBody(body: DialogBody): PaperDialogBody = when (body) {
@@ -101,13 +135,14 @@ class PaperDialogBackend : DialogBackend {
             .build()
     }
 
-    private fun toPaperButton(button: DialogButton, dialog: Dialog): ActionButton = ActionButton.builder(button.label)
-        .tooltip(button.tooltip)
-        .action(button.action?.let { toPaperAction(it, dialog) })
-        .apply { button.width?.let { width(it) } }
-        .build()
+    private fun toPaperButton(button: DialogButton, dialog: Dialog, showing: Showing): ActionButton =
+        ActionButton.builder(button.label)
+            .tooltip(button.tooltip)
+            .action(button.action?.let { toPaperAction(it, dialog, showing) })
+            .apply { button.width?.let { width(it) } }
+            .build()
 
-    private fun toPaperAction(action: DialogAction, dialog: Dialog): PaperDialogAction = when (action) {
+    private fun toPaperAction(action: DialogAction, dialog: Dialog, showing: Showing): PaperDialogAction = when (action) {
         is DialogAction.OpenUrl -> PaperDialogAction.staticAction(ClickEvent.openUrl(action.url))
         is DialogAction.RunCommand -> PaperDialogAction.staticAction(ClickEvent.runCommand(action.command))
         is DialogAction.SuggestCommand -> PaperDialogAction.staticAction(ClickEvent.suggestCommand(action.command))
@@ -116,21 +151,35 @@ class PaperDialogBackend : DialogBackend {
             // như đường ViaVersion: dialog đóng sau khi bấm thì callback chỉ chạy 1 lần
             val uses = if (dialog.afterAction == AfterAction.NONE) ClickCallback.UNLIMITED_USES else 1
             PaperDialogAction.customClick(
-                { response, audience -> onCallback(action, dialog, response, audience) },
+                { response, audience -> onCallback(action, dialog, showing, response, audience) },
                 ClickCallback.Options.builder().uses(uses).build(),
             )
         }
     }
 
-    private fun onCallback(action: DialogAction.Callback, dialog: Dialog, response: DialogResponseView, audience: Audience) {
+    private fun onCallback(
+        action: DialogAction.Callback,
+        dialog: Dialog,
+        showing: Showing,
+        response: DialogResponseView,
+        audience: Audience,
+    ) {
         val player = audience as? Player ?: return
-        val values = dialog.inputs
-            .mapNotNull { input -> responseValue(input, response)?.let { input.key to it } }
-            .toMap()
+        if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing) {
+            return
+        }
+        val values = DialogResponse.sanitizeAll(dialog.inputs) { responseValue(it, response) } ?: return
+        // như đường ViaVersion: dialog đóng sau khi bấm thì chỉ nhận 1 click, kể cả của nút khác
+        if (dialog.afterAction != AfterAction.NONE && !showings.remove(player.uniqueId, showing)) {
+            return
+        }
+        guard.onClick(player, dialog.afterAction)
+
         try {
             action.handler(DialogResponse(player, values))
         } catch (exception: Exception) {
             MineVNLib.instance.logger.log(Level.SEVERE, "Lỗi khi xử lý callback dialog của ${player.name}", exception)
+            guard.closeWaitingScreen(player)
         }
     }
 

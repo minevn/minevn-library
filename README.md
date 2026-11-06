@@ -193,4 +193,13 @@ Giới hạn:
   - Callback nhận qua packet `custom_click_action` bằng cách ghi đè handler trong ViaVersion
   - Nếu hook lỗi (thường do nâng ViaVersion), callback chuyển sang lệnh ẩn `/mvndialogcb`
     - Lệnh bị giới hạn 256 ký tự, `show` ném `IllegalArgumentException` nếu lệnh có thể dài hơn
-  - Callback chỉ có hiệu lực với dialog đang mở mới nhất
+
+Callback (mọi backend):
+- Chỉ có hiệu lực với dialog đang mở mới nhất. Dialog có `afterAction` khác `NONE` thì chỉ nhận 1 click
+- Giá trị input được kiểm tra theo dialog, click có giá trị sai bị bỏ qua:
+  - Text bị cắt theo `maxLength`
+  - Bool phải là `onTrue` / `onFalse`, option phải có trong dialog
+  - Số bị kẹp vào khoảng `start`..`end`
+- Mỗi player tối đa 10 click mỗi giây, click vượt quá bị bỏ qua
+- Dialog `WAIT_FOR_RESPONSE`: callback cần mở dialog mới hoặc gọi `DialogAPI.clear` để gỡ màn "Waiting for Server"
+  - Callback ném exception thì thư viện tự gỡ màn này

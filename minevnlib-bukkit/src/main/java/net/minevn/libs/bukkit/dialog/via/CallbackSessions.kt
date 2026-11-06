@@ -5,6 +5,9 @@ import com.viaversion.nbt.tag.CompoundTag
 import com.viaversion.nbt.tag.NumberTag
 import com.viaversion.nbt.tag.StringTag
 import com.viaversion.nbt.tag.Tag
+import net.minevn.libs.bukkit.dialog.AfterAction
+import net.minevn.libs.bukkit.dialog.DialogClickGuard
+import net.minevn.libs.bukkit.dialog.DialogInput
 import net.minevn.libs.bukkit.dialog.DialogResponse
 import org.bukkit.Bukkit
 import org.bukkit.entity.Player
@@ -26,15 +29,14 @@ import java.util.logging.Logger
  * - lệnh ẩn khi không hook được, bắt ở PlayerCommandPreprocessEvent để lấy nguyên chuỗi gốc
  *   (Bukkit tách args theo dấu cách)
  */
-internal class CallbackSessions(private val logger: Logger) : Listener {
+internal class CallbackSessions(private val logger: Logger, private val guard: DialogClickGuard) : Listener {
     class Session(
         val token: String,
         val separator: String,
-        val keys: List<String>,
-        /** key của input boolean -> (on_true, on_false), để packet trả cùng giá trị như đường lệnh */
-        val booleans: Map<String, Pair<String, String>>,
+        /** theo thứ tự giá trị trong lệnh callback */
+        val inputs: List<DialogInput>,
         val handlers: List<(DialogResponse) -> Unit>,
-        val closeOnUse: Boolean,
+        val afterAction: AfterAction,
     )
 
     private val sessions = ConcurrentHashMap<UUID, Session>()
@@ -63,16 +65,17 @@ internal class CallbackSessions(private val logger: Logger) : Listener {
         val session = sessions[uuid]?.takeIf { it.token == parts[0] } ?: return
 
         val compound = payload as? CompoundTag
-        val values = session.keys.associateWith { key ->
-            when (val tag = compound?.get(key)) {
+        // boolean trả theo on_true / on_false như đường lệnh
+        val values = DialogResponse.sanitizeAll(session.inputs) { input ->
+            when (val tag = compound?.get(input.key)) {
                 is StringTag -> tag.value
-                is ByteTag -> session.booleans[key]
-                    ?.let { if (tag.asBoolean()) it.first else it.second }
+                is ByteTag -> (input as? DialogInput.Bool)
+                    ?.let { if (tag.asBoolean()) it.onTrue else it.onFalse }
                     ?: tag.asBoolean().toString()
                 is NumberTag -> DialogResponse.formatNumber(tag.asFloat())
-                else -> return
+                else -> null
             }
-        }
+        } ?: return
         handle(player, session, index, values)
     }
 
@@ -85,6 +88,9 @@ internal class CallbackSessions(private val logger: Logger) : Listener {
         event.isCancelled = true
 
         val player = event.player
+        if (!guard.allowClick(player.uniqueId)) {
+            return
+        }
         val rest = message.substring(minOf(message.length, COMMAND_PREFIX.length))
         val spaceIndex = rest.indexOf(' ')
         val id = if (spaceIndex < 0) rest else rest.substring(0, spaceIndex)
@@ -100,33 +106,38 @@ internal class CallbackSessions(private val logger: Logger) : Listener {
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         sessions.remove(event.player.uniqueId)
+        guard.forget(event.player.uniqueId)
     }
 
     private fun handle(player: Player, session: Session, index: Int, values: Map<String, String>) {
         val handler = session.handlers.getOrNull(index) ?: return
-        if (session.closeOnUse) {
+        // dialog đóng sau khi bấm thì callback chỉ chạy 1 lần
+        if (session.afterAction != AfterAction.NONE) {
             sessions.remove(player.uniqueId, session)
         }
+        guard.onClick(player, session.afterAction)
 
         try {
             handler(DialogResponse(player, values))
         } catch (exception: Exception) {
             logger.log(Level.SEVERE, "Lỗi khi xử lý callback dialog của ${player.name}", exception)
+            guard.closeWaitingScreen(player)
         }
     }
 
     private fun parseValues(session: Session, payload: String): Map<String, String>? {
-        if (session.keys.isEmpty()) {
+        if (session.inputs.isEmpty()) {
             return emptyMap()
         }
         if (!payload.startsWith(session.separator)) {
             return null
         }
         val parts = payload.substring(session.separator.length).split(session.separator)
-        if (parts.size != session.keys.size) {
+        if (parts.size != session.inputs.size) {
             return null
         }
-        return session.keys.zip(parts).toMap()
+        val raw = session.inputs.map { it.key }.zip(parts).toMap()
+        return DialogResponse.sanitizeAll(session.inputs) { raw[it.key] }
     }
 
     private fun randomString(length: Int) = buildString(length) {

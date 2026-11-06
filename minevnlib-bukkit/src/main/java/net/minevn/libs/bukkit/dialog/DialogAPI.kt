@@ -45,6 +45,9 @@ object DialogAPI {
 
     /**
      * Đóng dialog đang mở của player. Trên Paper cần 1.21.8+.
+     *
+     * Nếu player đang ở màn "Waiting for Server" (vừa bấm nút của dialog [AfterAction.WAIT_FOR_RESPONSE])
+     * thì gỡ cả màn này bằng cách đóng inventory.
      */
     @JvmStatic
     fun clear(player: Player) {
