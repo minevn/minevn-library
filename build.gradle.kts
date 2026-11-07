@@ -7,7 +7,7 @@ plugins {
 
 allprojects {
     group = "net.minevn"
-    version = "26.1.8-devdialog-v3"
+    version = "26.1.8"
 
     pluginManager.apply("java-library")
     pluginManager.apply("org.jetbrains.kotlin.jvm")
