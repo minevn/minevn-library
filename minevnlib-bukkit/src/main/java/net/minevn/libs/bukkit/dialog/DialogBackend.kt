@@ -13,4 +13,8 @@ interface DialogBackend {
     fun show(player: Player, dialog: Dialog)
 
     fun clear(player: Player)
+
+    fun lock(player: Player)
+
+    fun unlock(player: Player)
 }

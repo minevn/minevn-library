@@ -107,6 +107,10 @@ class PaperDialogBackend : DialogBackend, Listener {
         guard.closeWaitingScreen(player)
     }
 
+    override fun lock(player: Player) = guard.lock(player.uniqueId)
+
+    override fun unlock(player: Player) = guard.unlock(player.uniqueId)
+
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         showings.remove(event.player.uniqueId)
@@ -229,7 +233,7 @@ class PaperDialogBackend : DialogBackend, Listener {
         audience: Audience,
     ) {
         val player = audience as? Player ?: return
-        if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing) {
+        if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing || guard.isLocked(player.uniqueId)) {
             return
         }
         val values = if (response == null) {

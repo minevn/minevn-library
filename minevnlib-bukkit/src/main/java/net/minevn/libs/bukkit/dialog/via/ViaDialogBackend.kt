@@ -51,6 +51,10 @@ internal class ViaDialogBackend : DialogBackend {
         guard.closeWaitingScreen(player)
     }
 
+    override fun lock(player: Player) = guard.lock(player.uniqueId)
+
+    override fun unlock(player: Player) = guard.unlock(player.uniqueId)
+
     /** Trả lại handler gốc của Via (cho /reload). */
     fun disable() {
         clickHook?.uninstall()

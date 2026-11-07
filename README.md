@@ -210,3 +210,6 @@ Callback (mọi backend):
 - Mỗi player tối đa 10 click mỗi giây, click vượt quá bị bỏ qua
 - Dialog `WAIT_FOR_RESPONSE`: callback cần mở dialog mới hoặc gọi `DialogAPI.clear` để gỡ màn "Waiting for Server"
   - Callback ném exception thì thư viện tự gỡ màn này
+- Dialog `NONE` nhận nhiều click, nút chạy async cần gọi `DialogAPI.lock` trước khi rời main thread để chặn click đúp
+  - Dialog vẫn hiện, click callback bị bỏ qua, nên không chớp như `DialogAPI.clear`
+  - `show` dialog mới thì tự mở khoá, nhánh không mở dialog mới phải gọi `DialogAPI.unlock`

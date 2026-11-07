@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap
  * - Giới hạn số click mỗi giây: mỗi click chạy handler trên main thread, client bị sửa gửi được hàng trăm click
  * - Nhớ player đang ở màn "Waiting for Server" (vừa bấm nút của dialog [AfterAction.WAIT_FOR_RESPONSE]).
  *   Packet clear_dialog chỉ đóng dialog, không gỡ được màn này, phải đóng inventory
+ * - Nhớ player đang bị khoá dialog ([DialogAPI.lock]): click callback bị bỏ qua tới khi mở khoá hoặc có dialog mới
  *
  * Chỉ dùng nội bộ, để public vì backend Paper nằm ở module minevnlib-paper.
  */
@@ -18,6 +19,7 @@ class DialogClickGuard internal constructor(private val clock: () -> Long) {
     /** player -> {giây, số click trong giây đó} */
     private val clickRates = ConcurrentHashMap<UUID, LongArray>()
     private val waiting = ConcurrentHashMap.newKeySet<UUID>()
+    private val locked = ConcurrentHashMap.newKeySet<UUID>()
 
     /** Click có được chạy không, quá [MAX_CLICKS_PER_SECOND] click mỗi giây thì bỏ. Gọi được từ thread bất kỳ. */
     fun allowClick(uuid: UUID): Boolean {
@@ -43,10 +45,21 @@ class DialogClickGuard internal constructor(private val clock: () -> Long) {
         }
     }
 
-    /** Dialog mới thay màn hình đang hiện, kể cả màn chờ. */
+    /** Dialog mới thay màn hình đang hiện, kể cả màn chờ, và không còn bị khoá. */
     fun onShow(player: Player) {
         waiting.remove(player.uniqueId)
+        locked.remove(player.uniqueId)
     }
+
+    fun lock(uuid: UUID) {
+        locked.add(uuid)
+    }
+
+    fun unlock(uuid: UUID) {
+        locked.remove(uuid)
+    }
+
+    fun isLocked(uuid: UUID) = uuid in locked
 
     /** Gỡ màn chờ nếu player đang ở đó. Đóng inventory thì client bỏ mọi màn hình đang hiện. */
     fun closeWaitingScreen(player: Player) {
@@ -58,6 +71,7 @@ class DialogClickGuard internal constructor(private val clock: () -> Long) {
     fun forget(uuid: UUID) {
         clickRates.remove(uuid)
         waiting.remove(uuid)
+        locked.remove(uuid)
     }
 
     companion object {
