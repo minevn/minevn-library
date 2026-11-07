@@ -24,6 +24,9 @@ object DialogAPI {
 
     /**
      * Client của player có hiển thị được dialog không. Client cũ hơn 1.21.6 cần fallback (GUI / chat).
+     *
+     * @param player player cần kiểm tra
+     * @return true nếu client hiển thị được dialog
      */
     @JvmStatic
     fun isSupported(player: Player) = backend.isSupported(player)
@@ -31,6 +34,8 @@ object DialogAPI {
     /**
      * Mở dialog cho player, thay dialog đang mở (nếu có).
      *
+     * @param player player được mở dialog
+     * @param dialog dialog cần mở
      * @return false nếu client không hỗ trợ dialog
      * @throws IllegalArgumentException nếu dialog không hợp lệ (vd lệnh callback có thể quá 256 ký tự)
      */
@@ -45,16 +50,54 @@ object DialogAPI {
 
     /**
      * Đóng dialog đang mở của player. Trên Paper cần 1.21.8+.
+     *
+     * Nếu player đang ở màn "Waiting for Server" (vừa bấm nút của dialog [AfterAction.WAIT_FOR_RESPONSE])
+     * thì gỡ cả màn này bằng cách đóng inventory.
+     *
+     * @param player player cần đóng dialog
      */
     @JvmStatic
     fun clear(player: Player) {
         backend.clear(player)
     }
 
+    /**
+     * Khoá dialog đang mở của player, như lock của chest GUI: dialog vẫn hiện, click callback bị bỏ qua.
+     * Nút chạy async gọi trước khi rời main thread, để click đúp không chạy nghiệp vụ lần nữa.
+     *
+     * Tự mở khoá khi [show] dialog mới. Nhánh không mở dialog mới thì gọi [unlock],
+     * nếu không player chỉ còn thoát được bằng Esc.
+     * Không chặn action do client tự xử lý như [DialogAction.OpenUrl], [DialogAction.RunCommand].
+     *
+     * @param player player cần khoá dialog
+     */
+    @JvmStatic
+    fun lock(player: Player) {
+        backend.lock(player)
+    }
+
+    /**
+     * Mở khoá dialog của player. Khác các hàm còn lại, hàm này gọi được từ thread bất kỳ.
+     *
+     * @param player player cần mở khoá dialog
+     */
+    @JvmStatic
+    fun unlock(player: Player) {
+        backend.unlock(player)
+    }
+
+    /** Dọn backend ViaVersion nếu đã tạo (cho /reload). */
     internal fun disable() {
         viaBackend?.disable()
     }
 
+    /**
+     * Chọn backend theo server, xem mô tả của [DialogAPI].
+     *
+     * @return backend phù hợp với server
+     * @throws ViaVersionNotInstalledException nếu server cũ hơn 1.21.6 không có ViaVersion
+     * @throws UnsupportedOperationException nếu server 1.21.6+ không có dialog API của Paper
+     */
     private fun createBackend(): DialogBackend {
         if (hasPaperDialogApi()) {
             // backend Paper biên dịch với paper-api 1.21.8 ở module khác, chỉ nạp khi server có API
@@ -72,6 +115,7 @@ object DialogAPI {
 
     /**
      * @param bukkitVersion dạng `1.21.8-R0.1-SNAPSHOT`, hoặc `26.3-R0.1-SNAPSHOT` từ khi Minecraft đổi cách đánh số
+     * @return true nếu phiên bản từ 1.21.6 trở lên
      */
     internal fun isAtLeast1216(bukkitVersion: String): Boolean {
         val numbers = bukkitVersion.substringBefore('-').split('.').map { it.toIntOrNull() ?: 0 }
@@ -80,6 +124,7 @@ object DialogAPI {
     }
 
     // không khởi tạo class: static field của Dialog truy cập registry
+    /** @return true nếu server có dialog API của Paper */
     private fun hasPaperDialogApi() = try {
         Class.forName(PAPER_DIALOG_CLASS, false, DialogAPI::class.java.classLoader)
         true

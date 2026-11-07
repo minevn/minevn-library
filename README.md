@@ -166,6 +166,10 @@ Xem [code mẫu](https://github.com/MineVN/dotman/blob/master/dotman-plugin/src/
 ### Dialog
 
 Mở dialog (tính năng của Minecraft 1.21.6) qua `DialogAPI`, dùng chung cho mọi phiên bản server:
+- `DialogBody.RichText` khai báo từng đoạn chữ (font, màu, bóng, click, tooltip), dùng khi Component không đủ
+  - Adventure của server cũ chưa biết shadow color và click custom
+  - Dialog đồ hoạ của matchmaker dựng trên kiểu thân này
+  - Callback trong chữ nhận `values` rỗng, vì click chữ không gửi được giá trị input
 - Server có dialog API của Paper (Paper 1.21.7+): gọi API của Paper
   - `clear` cần Paper 1.21.8+
 - Server cũ hơn 1.21.6 có ViaVersion 5.11.0+: dựng packet dialog qua ViaVersion, chỉ client 1.21.6+ xem được
@@ -193,4 +197,19 @@ Giới hạn:
   - Callback nhận qua packet `custom_click_action` bằng cách ghi đè handler trong ViaVersion
   - Nếu hook lỗi (thường do nâng ViaVersion), callback chuyển sang lệnh ẩn `/mvndialogcb`
     - Lệnh bị giới hạn 256 ký tự, `show` ném `IllegalArgumentException` nếu lệnh có thể dài hơn
-  - Callback chỉ có hiệu lực với dialog đang mở mới nhất
+    - Lệnh không chứa được ký tự xuống dòng, `show` ném `IllegalArgumentException` nếu dialog có input `multiline`
+- Input `multiline` (`DialogInput.Text.Multiline`): packet callback tối đa 65536 byte, tránh đặt `maxLength` quá lớn
+
+Callback (mọi backend):
+- Chỉ có hiệu lực với dialog đang mở mới nhất. Dialog có `afterAction` khác `NONE` thì chỉ nhận 1 click
+  - Tính cả click trong chữ của `RichText`
+- Giá trị input được kiểm tra theo dialog, click có giá trị sai bị bỏ qua:
+  - Text bị cắt theo số dòng (1 dòng nếu không có `multiline`) và `maxLength`
+  - Bool phải là `onTrue` / `onFalse`, option phải có trong dialog
+  - Số bị kẹp vào khoảng `start`..`end`
+- Mỗi player tối đa 10 click mỗi giây, click vượt quá bị bỏ qua
+- Dialog `WAIT_FOR_RESPONSE`: callback cần mở dialog mới hoặc gọi `DialogAPI.clear` để gỡ màn "Waiting for Server"
+  - Callback ném exception thì thư viện tự gỡ màn này
+- Dialog `NONE` nhận nhiều click, nút chạy async cần gọi `DialogAPI.lock` trước khi rời main thread để chặn click đúp
+  - Dialog vẫn hiện, click callback bị bỏ qua, nên không chớp như `DialogAPI.clear`
+  - `show` dialog mới thì tự mở khoá, nhánh không mở dialog mới phải gọi `DialogAPI.unlock`
