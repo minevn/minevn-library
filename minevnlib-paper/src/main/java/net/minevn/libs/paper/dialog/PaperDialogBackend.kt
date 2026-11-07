@@ -35,6 +35,8 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerQuitEvent
+import java.time.Duration
+import java.util.IdentityHashMap
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.logging.Level
@@ -52,7 +54,10 @@ import io.papermc.paper.registry.data.dialog.input.DialogInput as PaperDialogInp
  */
 class PaperDialogBackend : DialogBackend, Listener {
     /** Mỗi lần mở dialog là 1 object, callback của lần mở khác bị bỏ qua */
-    private class Showing
+    private class Showing {
+        /** 1 callback trải nhiều đoạn chữ chỉ đăng ký 1 lần, như đường ViaVersion */
+        val textClicks = IdentityHashMap<DialogAction.Callback, ClickEvent>()
+    }
 
     private val guard = DialogClickGuard()
     private val showings = ConcurrentHashMap<UUID, Showing>()
@@ -140,24 +145,11 @@ class PaperDialogBackend : DialogBackend, Listener {
         is DialogAction.RunCommand -> ClickEvent.runCommand(action.command)
         is DialogAction.SuggestCommand -> ClickEvent.suggestCommand(action.command)
         is DialogAction.CopyToClipboard -> ClickEvent.copyToClipboard(action.value)
-        is DialogAction.Callback -> ClickEvent.callback(
-            { audience -> onTextClick(action, dialog, showing, audience) },
-            ClickCallback.Options.builder().uses(ClickCallback.UNLIMITED_USES).build(),
-        )
-    }
-
-    /** Click trong chữ không gửi kèm giá trị input như nút. */
-    private fun onTextClick(action: DialogAction.Callback, dialog: Dialog, showing: Showing, audience: Audience) {
-        val player = audience as? Player ?: return
-        if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing) {
-            return
-        }
-        guard.onClick(player, dialog.afterAction)
-        try {
-            action.handler(DialogResponse(player, emptyMap()))
-        } catch (exception: Exception) {
-            MineVNLib.instance.logger.log(Level.SEVERE, "Lỗi khi xử lý callback dialog của ${player.name}", exception)
-            guard.closeWaitingScreen(player)
+        is DialogAction.Callback -> showing.textClicks.getOrPut(action) {
+            ClickEvent.callback(
+                { audience -> onCallback(action, dialog, showing, null, audience) },
+                callbackOptions(dialog),
+            )
         }
     }
 
@@ -205,28 +197,46 @@ class PaperDialogBackend : DialogBackend, Listener {
         is DialogAction.RunCommand -> PaperDialogAction.staticAction(ClickEvent.runCommand(action.command))
         is DialogAction.SuggestCommand -> PaperDialogAction.staticAction(ClickEvent.suggestCommand(action.command))
         is DialogAction.CopyToClipboard -> PaperDialogAction.staticAction(ClickEvent.copyToClipboard(action.value))
-        is DialogAction.Callback -> {
-            // như đường ViaVersion: dialog đóng sau khi bấm thì callback chỉ chạy 1 lần
-            val uses = if (dialog.afterAction == AfterAction.NONE) ClickCallback.UNLIMITED_USES else 1
-            PaperDialogAction.customClick(
-                { response, audience -> onCallback(action, dialog, showing, response, audience) },
-                ClickCallback.Options.builder().uses(uses).build(),
-            )
-        }
+        is DialogAction.Callback -> PaperDialogAction.customClick(
+            { response, audience -> onCallback(action, dialog, showing, response, audience) },
+            callbackOptions(dialog),
+        )
     }
 
+    /**
+     * Paper giữ callback tới hết lifetime dù dialog đã bị thay, nên đặt lifetime ngắn hơn mặc định 12 giờ.
+     * Như đường ViaVersion: dialog đóng sau khi bấm thì callback chỉ chạy 1 lần.
+     */
+    private fun callbackOptions(dialog: Dialog): ClickCallback.Options {
+        val uses = if (dialog.afterAction == AfterAction.NONE) {
+            ClickCallback.UNLIMITED_USES
+        } else {
+            1
+        }
+        return ClickCallback.Options.builder().uses(uses).lifetime(CALLBACK_LIFETIME).build()
+    }
+
+    /**
+     * Chạy handler cho cả nút và click trong chữ.
+     *
+     * @param response null nếu là click trong chữ, không gửi kèm giá trị input như nút
+     */
     private fun onCallback(
         action: DialogAction.Callback,
         dialog: Dialog,
         showing: Showing,
-        response: DialogResponseView,
+        response: DialogResponseView?,
         audience: Audience,
     ) {
         val player = audience as? Player ?: return
         if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing) {
             return
         }
-        val values = DialogResponse.sanitizeAll(dialog.inputs) { responseValue(it, response) } ?: return
+        val values = if (response == null) {
+            emptyMap()
+        } else {
+            DialogResponse.sanitizeAll(dialog.inputs) { responseValue(it, response) } ?: return
+        }
         // như đường ViaVersion: dialog đóng sau khi bấm thì chỉ nhận 1 click, kể cả của nút khác
         if (dialog.afterAction != AfterAction.NONE && !showings.remove(player.uniqueId, showing)) {
             return
@@ -252,5 +262,8 @@ class PaperDialogBackend : DialogBackend, Listener {
     companion object {
         /** Protocol version của Minecraft 1.21.6 */
         private const val PROTOCOL_1_21_6 = 771
+
+        /** Đủ dài cho 1 lần mở dialog, callback của lần mở cũ được Paper dọn sau thời gian này */
+        private val CALLBACK_LIFETIME = Duration.ofHours(1)
     }
 }

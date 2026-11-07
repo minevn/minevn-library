@@ -9,6 +9,7 @@ import net.minevn.libs.bukkit.dialog.via.DialogEncoder
 import net.kyori.adventure.text.Component
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class DialogRichTextTest {
@@ -60,5 +61,37 @@ class DialogRichTextTest {
     fun testTooltipIsHoverEvent() {
         val (_, tags) = encode(true, DialogTextRun("a", tooltip = Component.text("hi")))
         assertEquals("show_text", tags[0].getCompoundTag("hover_event")!!.getString("action"))
+    }
+
+    @Test
+    fun testEmptyRunsOmitExtra() {
+        val dialog = NoticeDialog(title = Component.empty(), body = listOf(DialogBody.RichText(emptyList())))
+        val body = DialogEncoder(dialog, "tokenvalue", "~s~", true).encode()
+            .getListTag("body", CompoundTag::class.java)!![0]
+        // client từ chối extra rỗng
+        assertFalse(body.getCompoundTag("contents")!!.contains("extra"))
+    }
+
+    @Test
+    fun testCallbackIndexIsTextHandler() {
+        val dialog = NoticeDialog(
+            title = Component.empty(),
+            action = DialogButton(Component.empty(), DialogAction.Callback { }),
+            body = listOf(DialogBody.RichText(listOf(DialogTextRun("a", click = DialogAction.Callback { })))),
+        )
+        val encoder = DialogEncoder(dialog, "tokenvalue", "~s~", true)
+        encoder.encode()
+        // body encode trước nút: index 0 là chữ, index 1 là nút
+        assertEquals(setOf(0), encoder.textHandlers)
+        assertEquals(2, encoder.handlers.size)
+    }
+
+    @Test
+    fun testInvalidStyleRejected() {
+        assertThrows(IllegalArgumentException::class.java) { DialogTextRun("a", color = 0x1000000) }
+        assertThrows(IllegalArgumentException::class.java) { DialogTextRun("a", color = -1) }
+        assertThrows(IllegalArgumentException::class.java) { DialogTextRun("a", font = "Bad Font") }
+        DialogTextRun("a", font = "minevn:dialog/ui", color = 0xFFFFFF)
+        DialogTextRun("a", font = "uniform")
     }
 }

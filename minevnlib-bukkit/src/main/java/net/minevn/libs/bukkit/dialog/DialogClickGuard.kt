@@ -24,7 +24,14 @@ class DialogClickGuard internal constructor(private val clock: () -> Long) {
         val second = clock() / 1000
         var count = 0L
         clickRates.compute(uuid) { _, rate ->
-            (if (rate == null || rate[0] != second) longArrayOf(second, 0) else rate).also { count = ++it[1] }
+            val current = if (rate == null || rate[0] != second) {
+                longArrayOf(second, 0)
+            } else {
+                rate
+            }
+            current[1]++
+            count = current[1]
+            current
         }
         return count <= MAX_CLICKS_PER_SECOND
     }

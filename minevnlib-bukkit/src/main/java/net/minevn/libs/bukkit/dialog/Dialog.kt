@@ -87,8 +87,10 @@ sealed class DialogBody {
  * Một đoạn chữ của [DialogBody.RichText].
  *
  * @param font id font, null là font mặc định
- * @param color màu RGB, null là mặc định
+ * @param color màu RGB trong khoảng 0..0xFFFFFF, null là mặc định
  * @param shadow false là tắt bóng chữ
+ * @param click [DialogAction.Callback] trong chữ nhận [DialogResponse.values] rỗng vì click chữ không gửi được input.
+ *   Click chữ cũng áp [Dialog.afterAction] như nút
  */
 class DialogTextRun(
     val text: String,
@@ -98,7 +100,18 @@ class DialogTextRun(
     val shadow: Boolean = false,
     val click: DialogAction? = null,
     val tooltip: Component? = null,
-)
+) {
+    // codec của client từ chối, ở đường ViaVersion player sẽ bị ngắt kết nối
+    init {
+        require(color == null || color in 0..0xFFFFFF) { "color phải là RGB trong khoảng 0..0xFFFFFF" }
+        require(font == null || FONT_PATTERN.matches(font)) { "font không phải id hợp lệ: $font" }
+    }
+
+    companion object {
+        // không dùng Key.parseable: server cũ có Adventure < 4.13 chưa có hàm này
+        private val FONT_PATTERN = Regex("([a-z0-9_.-]+:)?[a-z0-9_./-]+")
+    }
+}
 
 sealed class DialogInput(val key: String) {
     init {

@@ -36,6 +36,7 @@ internal class ViaDialogBackend : DialogBackend {
         } else {
             sessions.put(player, CallbackSessions.Session(
                 token, separator, dialog.inputs, encoder.handlers.toList(), dialog.afterAction,
+                encoder.textHandlers.toSet(),
             ))
         }
         guard.onShow(player)

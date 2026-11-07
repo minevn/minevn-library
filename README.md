@@ -169,6 +169,7 @@ Mở dialog (tính năng của Minecraft 1.21.6) qua `DialogAPI`, dùng chung ch
 - `DialogBody.RichText` khai báo từng đoạn chữ (font, màu, bóng, click, tooltip), dùng khi Component không đủ
   - Adventure của server cũ chưa biết shadow color và click custom
   - Dialog đồ hoạ của matchmaker dựng trên kiểu thân này
+  - Callback trong chữ nhận `values` rỗng, vì click chữ không gửi được giá trị input
 - Server có dialog API của Paper (Paper 1.21.7+): gọi API của Paper
   - `clear` cần Paper 1.21.8+
 - Server cũ hơn 1.21.6 có ViaVersion 5.11.0+: dựng packet dialog qua ViaVersion, chỉ client 1.21.6+ xem được
@@ -201,6 +202,7 @@ Giới hạn:
 
 Callback (mọi backend):
 - Chỉ có hiệu lực với dialog đang mở mới nhất. Dialog có `afterAction` khác `NONE` thì chỉ nhận 1 click
+  - Tính cả click trong chữ của `RichText`
 - Giá trị input được kiểm tra theo dialog, click có giá trị sai bị bỏ qua:
   - Text bị cắt theo số dòng (1 dòng nếu không có `multiline`) và `maxLength`
   - Bool phải là `onTrue` / `onFalse`, option phải có trong dialog

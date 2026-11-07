@@ -21,6 +21,8 @@ import net.minevn.libs.bukkit.dialog.NoticeDialog
  * - [useCustomAction] = true: action custom / dynamic/custom, id `minevnlib:cb/<token>/<index>`,
  *   payload là compound giá trị input (bắt qua [ViaClickHook])
  * - [useCustomAction] = false: lệnh `/<CALLBACK_COMMAND> <token>.<index> <sep>v1<sep>v2...` theo thứ tự [keys]
+ *
+ * Click trong chữ không gửi được giá trị input, index của chúng nằm trong [textHandlers].
  */
 internal class DialogEncoder(
     private val dialog: Dialog,
@@ -30,6 +32,7 @@ internal class DialogEncoder(
 ) {
     val keys: List<String> = dialog.inputs.map { it.key }
     val handlers = mutableListOf<(DialogResponse) -> Unit>()
+    val textHandlers = mutableSetOf<Int>()
 
     init {
         require(keys.toSet().size == keys.size) { "Input key bị trùng: $keys" }
@@ -60,7 +63,9 @@ internal class DialogEncoder(
             }
         }
 
-        if (handlers.isNotEmpty() && !useCustomAction) {
+        // chỉ nút mới gửi giá trị input trong lệnh callback
+        val hasButtonCallback = handlers.size > textHandlers.size
+        if (hasButtonCallback && !useCustomAction) {
             // client nhét nguyên giá trị vào chat command, server kick khi gặp ký tự xuống dòng
             require(dialog.inputs.none { it is DialogInput.Text && it.multiline != null }) {
                 "Input multiline cần hook custom_click_action, đường lệnh callback không hỗ trợ"
@@ -87,7 +92,10 @@ internal class DialogEncoder(
                 putString("type", "minecraft:plain_message")
                 put("contents", CompoundTag().apply {
                     putString("text", "")
-                    put("extra", compoundList(body.runs.map(::encodeRun)))
+                    // codec của client từ chối extra rỗng, player sẽ bị ngắt kết nối
+                    if (body.runs.isNotEmpty()) {
+                        put("extra", compoundList(body.runs.map(::encodeRun)))
+                    }
                 })
                 body.width?.let { putInt("width", it) }
             }
@@ -138,6 +146,7 @@ internal class DialogEncoder(
                 if (index < 0) {
                     index = handlers.size
                     handlers += action.handler
+                    textHandlers += index
                 }
                 if (useCustomAction) {
                     putString("action", "custom")

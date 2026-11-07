@@ -37,6 +37,8 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         val inputs: List<DialogInput>,
         val handlers: List<(DialogResponse) -> Unit>,
         val afterAction: AfterAction,
+        /** index của handler đăng ký từ click trong chữ, nhận values rỗng vì click chữ không gửi được input */
+        val textHandlers: Set<Int>,
     )
 
     private val sessions = ConcurrentHashMap<UUID, Session>()
@@ -64,9 +66,18 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         val index = parts[1].toIntOrNull() ?: return
         val session = sessions[uuid]?.takeIf { it.token == parts[0] } ?: return
 
+        val values = if (index in session.textHandlers) {
+            emptyMap()
+        } else {
+            payloadValues(session, payload) ?: return
+        }
+        handle(player, session, index, values)
+    }
+
+    private fun payloadValues(session: Session, payload: Tag?): Map<String, String>? {
         val compound = payload as? CompoundTag
         // boolean trả theo on_true / on_false như đường lệnh
-        val values = DialogResponse.sanitizeAll(session.inputs) { input ->
+        return DialogResponse.sanitizeAll(session.inputs) { input ->
             when (val tag = compound?.get(input.key)) {
                 is StringTag -> tag.value
                 is ByteTag -> (input as? DialogInput.Bool)
@@ -75,8 +86,7 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
                 is NumberTag -> DialogResponse.formatNumber(tag.asFloat())
                 else -> null
             }
-        } ?: return
-        handle(player, session, index, values)
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
@@ -99,7 +109,11 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         val token = id.substringBefore('.')
         val index = id.substringAfter('.', "").toIntOrNull() ?: return
         val session = sessions[player.uniqueId]?.takeIf { it.token == token } ?: return
-        val values = parseValues(session, payload) ?: return
+        val values = if (index in session.textHandlers) {
+            emptyMap()
+        } else {
+            parseValues(session, payload) ?: return
+        }
         handle(player, session, index, values)
     }
 
