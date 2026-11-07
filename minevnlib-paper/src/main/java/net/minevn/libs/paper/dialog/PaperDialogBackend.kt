@@ -4,6 +4,7 @@ import io.papermc.paper.dialog.DialogResponseView
 import io.papermc.paper.registry.data.dialog.ActionButton
 import io.papermc.paper.registry.data.dialog.DialogBase
 import io.papermc.paper.registry.data.dialog.input.SingleOptionDialogInput
+import io.papermc.paper.registry.data.dialog.input.TextDialogInput
 import io.papermc.paper.registry.data.dialog.type.DialogType
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.key.Key
@@ -165,7 +166,10 @@ class PaperDialogBackend : DialogBackend, Listener {
             .labelVisible(input.labelVisible)
             .initial(input.initial)
             .maxLength(input.maxLength)
-            .apply { input.width?.let { width(it) } }
+            .apply {
+                input.width?.let { width(it) }
+                input.multiline?.let { multiline(TextDialogInput.MultilineOptions.create(it.maxLines, it.height)) }
+            }
             .build()
         is DialogInput.Bool -> PaperDialogInput.bool(input.key, input.label)
             .initial(input.initial)

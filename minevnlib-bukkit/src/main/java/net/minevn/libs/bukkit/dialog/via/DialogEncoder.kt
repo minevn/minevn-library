@@ -61,6 +61,10 @@ internal class DialogEncoder(
         }
 
         if (handlers.isNotEmpty() && !useCustomAction) {
+            // client nhét nguyên giá trị vào chat command, server kick khi gặp ký tự xuống dòng
+            require(dialog.inputs.none { it is DialogInput.Text && it.multiline != null }) {
+                "Input multiline cần hook custom_click_action, đường lệnh callback không hỗ trợ"
+            }
             checkCommandLength()
         }
         return tag
@@ -156,6 +160,12 @@ internal class DialogEncoder(
                 putString("initial", input.initial)
                 putInt("max_length", input.maxLength)
                 input.width?.let { putInt("width", it) }
+                input.multiline?.let { multiline ->
+                    put("multiline", CompoundTag().apply {
+                        multiline.maxLines?.let { putInt("max_lines", it) }
+                        multiline.height?.let { putInt("height", it) }
+                    })
+                }
             }
             is DialogInput.Bool -> {
                 putString("type", "minecraft:boolean")

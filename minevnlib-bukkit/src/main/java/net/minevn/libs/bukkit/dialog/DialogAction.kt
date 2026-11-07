@@ -41,7 +41,7 @@ class DialogResponse(val player: Player, val values: Map<String, String>) {
          * Kiểm tra giá trị client gửi về theo input đã gửi đi. Dùng chung cho mọi backend.
          *
          * Client bị sửa gửi được giá trị bất kỳ, không theo giới hạn của dialog:
-         * - Text: cắt theo maxLength
+         * - Text: cắt theo số dòng cho phép (mặc định 1 dòng) rồi theo maxLength
          * - Bool: phải là onTrue hoặc onFalse
          * - SingleOption: phải là id của 1 option trong dialog
          * - NumberRange: phải là số, kẹp vào khoảng start..end, bỏ phần .0 như [formatNumber]
@@ -50,7 +50,11 @@ class DialogResponse(val player: Player, val values: Map<String, String>) {
          */
         @JvmStatic
         fun sanitize(input: DialogInput, value: String): String? = when (input) {
-            is DialogInput.Text -> value.take(input.maxLength)
+            is DialogInput.Text -> {
+                // client tính max_lines cả dòng tự ngắt, nên giá trị hợp lệ không bao giờ vượt số dòng này
+                val maxLines = input.multiline?.let { it.maxLines ?: Int.MAX_VALUE } ?: 1
+                value.lineSequence().take(maxLines).joinToString("\n").take(input.maxLength)
+            }
             is DialogInput.Bool -> value.takeIf { it == input.onTrue || it == input.onFalse }
             is DialogInput.SingleOption -> value.takeIf { id -> input.options.any { it.id == id } }
             is DialogInput.NumberRange -> value.toFloatOrNull()

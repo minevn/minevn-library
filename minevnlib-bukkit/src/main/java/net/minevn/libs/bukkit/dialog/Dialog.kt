@@ -106,8 +106,12 @@ sealed class DialogInput(val key: String) {
     }
 
     /**
-     * Ô nhập 1 dòng. Không hỗ trợ multiline vì ở đường ViaVersion,
-     * ký tự xuống dòng trong chat command sẽ bị server kick.
+     * Ô nhập chữ, mặc định 1 dòng.
+     *
+     * @param multiline cho nhập nhiều dòng, các dòng ngăn cách bằng `\n`
+     * - Đường ViaVersion cần hook custom_click_action: ở đường lệnh ẩn, ký tự xuống dòng trong chat command
+     *   sẽ bị server kick, nên [DialogAPI.show] ném [IllegalArgumentException]
+     * - Packet callback tối đa 65536 byte, nên tránh đặt [maxLength] quá lớn
      */
     class Text(
         key: String,
@@ -116,11 +120,20 @@ sealed class DialogInput(val key: String) {
         val maxLength: Int = 32,
         val width: Int? = null,
         val labelVisible: Boolean = true,
+        val multiline: Multiline? = null,
     ) : DialogInput(key) {
         init {
             require(maxLength > 0) { "maxLength phải > 0" }
             // codec của client từ chối, ở đường ViaVersion player sẽ bị ngắt kết nối
             require(initial.length <= maxLength) { "initial dài hơn maxLength" }
+        }
+
+        class Multiline(val maxLines: Int? = null, val height: Int? = null) {
+            // codec của client từ chối, ở đường ViaVersion player sẽ bị ngắt kết nối
+            init {
+                require(maxLines == null || maxLines > 0) { "maxLines phải > 0" }
+                require(height == null || height in 1..512) { "height phải trong khoảng 1..512" }
+            }
         }
     }
 

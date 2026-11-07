@@ -196,11 +196,13 @@ Giới hạn:
   - Callback nhận qua packet `custom_click_action` bằng cách ghi đè handler trong ViaVersion
   - Nếu hook lỗi (thường do nâng ViaVersion), callback chuyển sang lệnh ẩn `/mvndialogcb`
     - Lệnh bị giới hạn 256 ký tự, `show` ném `IllegalArgumentException` nếu lệnh có thể dài hơn
+    - Lệnh không chứa được ký tự xuống dòng, `show` ném `IllegalArgumentException` nếu dialog có input `multiline`
+- Input `multiline` (`DialogInput.Text.Multiline`): packet callback tối đa 65536 byte, tránh đặt `maxLength` quá lớn
 
 Callback (mọi backend):
 - Chỉ có hiệu lực với dialog đang mở mới nhất. Dialog có `afterAction` khác `NONE` thì chỉ nhận 1 click
 - Giá trị input được kiểm tra theo dialog, click có giá trị sai bị bỏ qua:
-  - Text bị cắt theo `maxLength`
+  - Text bị cắt theo số dòng (1 dòng nếu không có `multiline`) và `maxLength`
   - Bool phải là `onTrue` / `onFalse`, option phải có trong dialog
   - Số bị kẹp vào khoảng `start`..`end`
 - Mỗi player tối đa 10 click mỗi giây, click vượt quá bị bỏ qua
