@@ -11,6 +11,7 @@ import net.minevn.libs.bukkit.dialog.DialogBody
 import net.minevn.libs.bukkit.dialog.DialogButton
 import net.minevn.libs.bukkit.dialog.DialogInput
 import net.minevn.libs.bukkit.dialog.DialogResponse
+import net.minevn.libs.bukkit.dialog.DialogTextRun
 import net.minevn.libs.bukkit.dialog.MultiActionDialog
 import net.minevn.libs.bukkit.dialog.NoticeDialog
 
@@ -20,6 +21,8 @@ import net.minevn.libs.bukkit.dialog.NoticeDialog
  * - [useCustomAction] = true: action custom / dynamic/custom, id `minevnlib:cb/<token>/<index>`,
  *   payload là compound giá trị input (bắt qua [ViaClickHook])
  * - [useCustomAction] = false: lệnh `/<CALLBACK_COMMAND> <token>.<index> <sep>v1<sep>v2...` theo thứ tự [keys]
+ *
+ * Click trong chữ không gửi được giá trị input, index của chúng nằm trong [textHandlers].
  */
 internal class DialogEncoder(
     private val dialog: Dialog,
@@ -28,10 +31,8 @@ internal class DialogEncoder(
     private val useCustomAction: Boolean,
 ) {
     val keys: List<String> = dialog.inputs.map { it.key }
-    val booleans: Map<String, Pair<String, String>> = dialog.inputs
-        .filterIsInstance<DialogInput.Bool>()
-        .associate { it.key to (it.onTrue to it.onFalse) }
     val handlers = mutableListOf<(DialogResponse) -> Unit>()
+    val textHandlers = mutableSetOf<Int>()
 
     init {
         require(keys.toSet().size == keys.size) { "Input key bị trùng: $keys" }
@@ -62,7 +63,13 @@ internal class DialogEncoder(
             }
         }
 
-        if (handlers.isNotEmpty() && !useCustomAction) {
+        // chỉ nút mới gửi giá trị input trong lệnh callback
+        val hasButtonCallback = handlers.size > textHandlers.size
+        if (hasButtonCallback && !useCustomAction) {
+            // client nhét nguyên giá trị vào chat command, server kick khi gặp ký tự xuống dòng
+            require(dialog.inputs.none { it is DialogInput.Text && it.multiline != null }) {
+                "Input multiline cần hook custom_click_action, đường lệnh callback không hỗ trợ"
+            }
             checkCommandLength()
         }
         return tag
@@ -81,6 +88,74 @@ internal class DialogEncoder(
                 put("contents", ComponentNbt.toNbt(body.contents))
                 body.width?.let { putInt("width", it) }
             }
+            is DialogBody.RichText -> {
+                putString("type", "minecraft:plain_message")
+                put("contents", CompoundTag().apply {
+                    putString("text", "")
+                    // codec của client từ chối extra rỗng, player sẽ bị ngắt kết nối
+                    if (body.runs.isNotEmpty()) {
+                        put("extra", compoundList(body.runs.map(::encodeRun)))
+                    }
+                })
+                body.width?.let { putInt("width", it) }
+            }
+        }
+    }
+
+    private fun encodeRun(run: DialogTextRun) = CompoundTag().apply {
+        putString("text", run.text)
+        run.font?.let { putString("font", it) }
+        run.color?.let { putString("color", "#%06x".format(it)) }
+        if (run.bold) {
+            putBoolean("bold", true)
+        }
+        if (!run.shadow) {
+            putInt("shadow_color", 0)
+        }
+        run.click?.let { put("click_event", encodeClick(it)) }
+        run.tooltip?.let { tooltip ->
+            put("hover_event", CompoundTag().apply {
+                putString("action", "show_text")
+                put("value", ComponentNbt.toNbt(tooltip))
+            })
+        }
+    }
+
+    /** Click trong chữ có format riêng, khác action của nút. */
+    private fun encodeClick(action: DialogAction) = CompoundTag().apply {
+        when (action) {
+            is DialogAction.OpenUrl -> {
+                putString("action", "open_url")
+                putString("url", action.url)
+            }
+            is DialogAction.RunCommand -> {
+                putString("action", "run_command")
+                putString("command", action.command)
+            }
+            is DialogAction.SuggestCommand -> {
+                putString("action", "suggest_command")
+                putString("command", action.command)
+            }
+            is DialogAction.CopyToClipboard -> {
+                putString("action", "copy_to_clipboard")
+                putString("value", action.value)
+            }
+            is DialogAction.Callback -> {
+                // 1 vùng click có thể trải nhiều đoạn chữ cùng callback
+                var index = handlers.indexOf(action.handler)
+                if (index < 0) {
+                    index = handlers.size
+                    handlers += action.handler
+                    textHandlers += index
+                }
+                if (useCustomAction) {
+                    putString("action", "custom")
+                    putString("id", "${ViaClickHook.ID_PREFIX}$token/$index")
+                } else {
+                    putString("action", "run_command")
+                    putString("command", "/$CALLBACK_COMMAND $token.$index")
+                }
+            }
         }
     }
 
@@ -94,6 +169,12 @@ internal class DialogEncoder(
                 putString("initial", input.initial)
                 putInt("max_length", input.maxLength)
                 input.width?.let { putInt("width", it) }
+                input.multiline?.let { multiline ->
+                    put("multiline", CompoundTag().apply {
+                        multiline.maxLines?.let { putInt("max_lines", it) }
+                        multiline.height?.let { putInt("height", it) }
+                    })
+                }
             }
             is DialogInput.Bool -> {
                 putString("type", "minecraft:boolean")

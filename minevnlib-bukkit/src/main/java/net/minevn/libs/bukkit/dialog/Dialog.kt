@@ -75,6 +75,42 @@ class DialogButton(
 
 sealed class DialogBody {
     class PlainMessage(val contents: Component, val width: Int? = null) : DialogBody()
+
+    /**
+     * Như [PlainMessage] nhưng tự khai báo từng đoạn chữ, click và tooltip nằm ngay trong chữ.
+     * Dùng khi Component không đủ: Adventure của server cũ chưa biết shadow color và click custom.
+     */
+    class RichText(val runs: List<DialogTextRun>, val width: Int? = null) : DialogBody()
+}
+
+/**
+ * Một đoạn chữ của [DialogBody.RichText].
+ *
+ * @param font id font, null là font mặc định
+ * @param color màu RGB trong khoảng 0..0xFFFFFF, null là mặc định
+ * @param shadow false là tắt bóng chữ
+ * @param click [DialogAction.Callback] trong chữ nhận [DialogResponse.values] rỗng vì click chữ không gửi được input.
+ *   Click chữ cũng áp [Dialog.afterAction] như nút
+ */
+class DialogTextRun(
+    val text: String,
+    val font: String? = null,
+    val color: Int? = null,
+    val bold: Boolean = false,
+    val shadow: Boolean = false,
+    val click: DialogAction? = null,
+    val tooltip: Component? = null,
+) {
+    // codec của client từ chối, ở đường ViaVersion player sẽ bị ngắt kết nối
+    init {
+        require(color == null || color in 0..0xFFFFFF) { "color phải là RGB trong khoảng 0..0xFFFFFF" }
+        require(font == null || FONT_PATTERN.matches(font)) { "font không phải id hợp lệ: $font" }
+    }
+
+    companion object {
+        // không dùng Key.parseable: server cũ có Adventure < 4.13 chưa có hàm này
+        private val FONT_PATTERN = Regex("([a-z0-9_.-]+:)?[a-z0-9_./-]+")
+    }
 }
 
 sealed class DialogInput(val key: String) {
@@ -83,8 +119,12 @@ sealed class DialogInput(val key: String) {
     }
 
     /**
-     * Ô nhập 1 dòng. Không hỗ trợ multiline vì ở đường ViaVersion,
-     * ký tự xuống dòng trong chat command sẽ bị server kick.
+     * Ô nhập chữ, mặc định 1 dòng.
+     *
+     * @param multiline cho nhập nhiều dòng, các dòng ngăn cách bằng `\n`
+     * - Đường ViaVersion cần hook custom_click_action: ở đường lệnh ẩn, ký tự xuống dòng trong chat command
+     *   sẽ bị server kick, nên [DialogAPI.show] ném [IllegalArgumentException]
+     * - Packet callback tối đa 65536 byte, nên tránh đặt [maxLength] quá lớn
      */
     class Text(
         key: String,
@@ -93,11 +133,20 @@ sealed class DialogInput(val key: String) {
         val maxLength: Int = 32,
         val width: Int? = null,
         val labelVisible: Boolean = true,
+        val multiline: Multiline? = null,
     ) : DialogInput(key) {
         init {
             require(maxLength > 0) { "maxLength phải > 0" }
             // codec của client từ chối, ở đường ViaVersion player sẽ bị ngắt kết nối
             require(initial.length <= maxLength) { "initial dài hơn maxLength" }
+        }
+
+        class Multiline(val maxLines: Int? = null, val height: Int? = null) {
+            // codec của client từ chối, ở đường ViaVersion player sẽ bị ngắt kết nối
+            init {
+                require(maxLines == null || maxLines > 0) { "maxLines phải > 0" }
+                require(height == null || height in 1..512) { "height phải trong khoảng 1..512" }
+            }
         }
     }
 

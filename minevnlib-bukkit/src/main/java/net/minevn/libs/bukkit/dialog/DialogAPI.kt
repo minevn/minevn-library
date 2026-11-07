@@ -45,10 +45,34 @@ object DialogAPI {
 
     /**
      * Đóng dialog đang mở của player. Trên Paper cần 1.21.8+.
+     *
+     * Nếu player đang ở màn "Waiting for Server" (vừa bấm nút của dialog [AfterAction.WAIT_FOR_RESPONSE])
+     * thì gỡ cả màn này bằng cách đóng inventory.
      */
     @JvmStatic
     fun clear(player: Player) {
         backend.clear(player)
+    }
+
+    /**
+     * Khoá dialog đang mở của player, như lock của chest GUI: dialog vẫn hiện, click callback bị bỏ qua.
+     * Nút chạy async gọi trước khi rời main thread, để click đúp không chạy nghiệp vụ lần nữa.
+     *
+     * Tự mở khoá khi [show] dialog mới. Nhánh không mở dialog mới thì gọi [unlock],
+     * nếu không player chỉ còn thoát được bằng Esc.
+     * Không chặn action do client tự xử lý như [DialogAction.OpenUrl], [DialogAction.RunCommand].
+     */
+    @JvmStatic
+    fun lock(player: Player) {
+        backend.lock(player)
+    }
+
+    /**
+     * Mở khoá dialog của player. Khác các hàm còn lại, hàm này gọi được từ thread bất kỳ.
+     */
+    @JvmStatic
+    fun unlock(player: Player) {
+        backend.unlock(player)
     }
 
     internal fun disable() {
