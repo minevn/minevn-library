@@ -68,9 +68,19 @@ class PaperDialogBackend : DialogBackend, Listener {
     }
 
     // client cũ hơn 1.21.6 vào qua ViaBackwards không hiện được dialog gốc
+    /**
+     * @param player player cần kiểm tra
+     * @return true nếu server không có ViaVersion hoặc client của player từ 1.21.6 trở lên
+     */
     override fun isSupported(player: Player) = !Bukkit.getPluginManager().isPluginEnabled("ViaVersion") ||
         player.getClientProtocolVersion() >= PROTOCOL_1_21_6
 
+    /**
+     * Đổi dialog sang model của Paper rồi mở, callback của lần mở trước không còn hiệu lực.
+     *
+     * @param player player được mở dialog
+     * @param dialog dialog cần mở
+     */
     override fun show(player: Player, dialog: Dialog) {
         val showing = Showing()
         val base = DialogBase.builder(dialog.title)
@@ -101,22 +111,48 @@ class PaperDialogBackend : DialogBackend, Listener {
     }
 
     // Audience#closeDialog có từ Adventure 4.24 (Paper 1.21.8)
+    /**
+     * Bỏ callback, đóng dialog và gỡ màn chờ.
+     *
+     * @param player player cần đóng dialog
+     */
     override fun clear(player: Player) {
         showings.remove(player.uniqueId)
         player.closeDialog()
         guard.closeWaitingScreen(player)
     }
 
+    /**
+     * Bỏ qua click callback cho tới khi mở khoá hoặc có dialog mới.
+     *
+     * @param player player cần khoá dialog
+     */
     override fun lock(player: Player) = guard.lock(player.uniqueId)
 
+    /**
+     * Mở khoá dialog. Gọi được từ thread bất kỳ.
+     *
+     * @param player player cần mở khoá dialog
+     */
     override fun unlock(player: Player) = guard.unlock(player.uniqueId)
 
+    /**
+     * Xoá lần mở và trạng thái click của player thoát.
+     *
+     * @param event sự kiện player thoát
+     */
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         showings.remove(event.player.uniqueId)
         guard.forget(event.player.uniqueId)
     }
 
+    /**
+     * @param body khối nội dung
+     * @param dialog dialog chứa khối nội dung
+     * @param showing lần mở dialog
+     * @return khối nội dung theo model của Paper
+     */
     private fun toPaperBody(body: DialogBody, dialog: Dialog, showing: Showing): PaperDialogBody = when (body) {
         is DialogBody.PlainMessage -> body.width
             ?.let { PaperDialogBody.plainMessage(body.contents, it) }
@@ -129,6 +165,12 @@ class PaperDialogBackend : DialogBackend, Listener {
         }
     }
 
+    /**
+     * @param run đoạn chữ
+     * @param dialog dialog chứa đoạn chữ
+     * @param showing lần mở dialog
+     * @return component của đoạn chữ
+     */
     private fun toPaperRun(run: DialogTextRun, dialog: Dialog, showing: Showing): Component {
         var component: Component = Component.text(run.text)
         run.font?.let { component = component.font(Key.key(it)) }
@@ -144,6 +186,12 @@ class PaperDialogBackend : DialogBackend, Listener {
         return component
     }
 
+    /**
+     * @param action action của click trong chữ
+     * @param dialog dialog chứa đoạn chữ
+     * @param showing lần mở dialog
+     * @return click event của Adventure
+     */
     private fun toPaperClick(action: DialogAction, dialog: Dialog, showing: Showing): ClickEvent = when (action) {
         is DialogAction.OpenUrl -> ClickEvent.openUrl(action.url)
         is DialogAction.RunCommand -> ClickEvent.runCommand(action.command)
@@ -157,6 +205,10 @@ class PaperDialogBackend : DialogBackend, Listener {
         }
     }
 
+    /**
+     * @param input ô nhập
+     * @return ô nhập theo model của Paper
+     */
     private fun toPaperInput(input: DialogInput): PaperDialogInput = when (input) {
         is DialogInput.Text -> PaperDialogInput.text(input.key, input.label)
             .labelVisible(input.labelVisible)
@@ -189,6 +241,12 @@ class PaperDialogBackend : DialogBackend, Listener {
             .build()
     }
 
+    /**
+     * @param button nút
+     * @param dialog dialog chứa nút
+     * @param showing lần mở dialog
+     * @return nút theo model của Paper
+     */
     private fun toPaperButton(button: DialogButton, dialog: Dialog, showing: Showing): ActionButton =
         ActionButton.builder(button.label)
             .tooltip(button.tooltip)
@@ -196,6 +254,12 @@ class PaperDialogBackend : DialogBackend, Listener {
             .apply { button.width?.let { width(it) } }
             .build()
 
+    /**
+     * @param action action của nút
+     * @param dialog dialog chứa nút
+     * @param showing lần mở dialog
+     * @return action theo model của Paper
+     */
     private fun toPaperAction(action: DialogAction, dialog: Dialog, showing: Showing): PaperDialogAction = when (action) {
         is DialogAction.OpenUrl -> PaperDialogAction.staticAction(ClickEvent.openUrl(action.url))
         is DialogAction.RunCommand -> PaperDialogAction.staticAction(ClickEvent.runCommand(action.command))
@@ -210,6 +274,9 @@ class PaperDialogBackend : DialogBackend, Listener {
     /**
      * Paper giữ callback tới hết lifetime dù dialog đã bị thay, nên đặt lifetime ngắn hơn mặc định 12 giờ.
      * Như đường ViaVersion: dialog đóng sau khi bấm thì callback chỉ chạy 1 lần.
+     *
+     * @param dialog dialog chứa callback
+     * @return tuỳ chọn của callback
      */
     private fun callbackOptions(dialog: Dialog): ClickCallback.Options {
         val uses = if (dialog.afterAction == AfterAction.NONE) {
@@ -223,7 +290,11 @@ class PaperDialogBackend : DialogBackend, Listener {
     /**
      * Chạy handler cho cả nút và click trong chữ.
      *
+     * @param action callback cần chạy
+     * @param dialog dialog chứa callback
+     * @param showing lần mở dialog của callback, khác lần mở mới nhất thì click bị bỏ qua
      * @param response null nếu là click trong chữ, không gửi kèm giá trị input như nút
+     * @param audience người click, không phải player thì bỏ qua
      */
     private fun onCallback(
         action: DialogAction.Callback,
@@ -255,7 +326,13 @@ class PaperDialogBackend : DialogBackend, Listener {
         }
     }
 
-    /** Trả giá trị dạng chuỗi giống đường ViaVersion: boolean theo on_true / on_false, số bỏ phần .0 */
+    /**
+     * Trả giá trị dạng chuỗi giống đường ViaVersion: boolean theo on_true / on_false, số bỏ phần .0
+     *
+     * @param input ô nhập
+     * @param response dữ liệu client gửi về
+     * @return giá trị dạng chuỗi, null nếu không có
+     */
     private fun responseValue(input: DialogInput, response: DialogResponseView): String? = when (input) {
         is DialogInput.Text -> response.getText(input.key)
         is DialogInput.SingleOption -> response.getText(input.key)

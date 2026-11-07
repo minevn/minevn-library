@@ -23,8 +23,18 @@ internal class ViaDialogBackend : DialogBackend {
         plugin.server.pluginManager.registerEvents(sessions, plugin)
     }
 
+    /**
+     * @param player player cần kiểm tra
+     * @return true nếu client của player từ 1.21.6 trở lên
+     */
     override fun isSupported(player: Player) = ViaDialogSender.isSupported(player)
 
+    /**
+     * Encode dialog, nhớ callback của lần mở này rồi gửi packet.
+     *
+     * @param player player được mở dialog
+     * @param dialog dialog cần mở
+     */
     override fun show(player: Player, dialog: Dialog) {
         val token = sessions.newToken()
         val separator = sessions.newSeparator()
@@ -43,6 +53,11 @@ internal class ViaDialogBackend : DialogBackend {
         ViaDialogSender.show(player, tag)
     }
 
+    /**
+     * Bỏ callback, gửi packet đóng dialog và gỡ màn chờ.
+     *
+     * @param player player cần đóng dialog
+     */
     override fun clear(player: Player) {
         sessions.remove(player)
         if (isSupported(player)) {
@@ -51,8 +66,18 @@ internal class ViaDialogBackend : DialogBackend {
         guard.closeWaitingScreen(player)
     }
 
+    /**
+     * Bỏ qua click callback cho tới khi mở khoá hoặc có dialog mới.
+     *
+     * @param player player cần khoá dialog
+     */
     override fun lock(player: Player) = guard.lock(player.uniqueId)
 
+    /**
+     * Mở khoá dialog. Gọi được từ thread bất kỳ.
+     *
+     * @param player player cần mở khoá dialog
+     */
     override fun unlock(player: Player) = guard.unlock(player.uniqueId)
 
     /** Trả lại handler gốc của Via (cho /reload). */

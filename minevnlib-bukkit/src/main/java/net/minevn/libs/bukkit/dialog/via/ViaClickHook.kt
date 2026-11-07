@@ -21,6 +21,10 @@ import java.util.logging.Level
  * Click quá giới hạn của [guard] bị bỏ ngay trên thread của Via, không đẩy về main thread.
  *
  * Can thiệp vào nội bộ ViaVersion, có thể hỏng khi nâng Via, nên lỗi lúc cài thì quay về callback bằng lệnh.
+ *
+ * @param plugin plugin để ghi log
+ * @param guard trạng thái click dùng chung của backend
+ * @param onClick nhận click trên main thread: player, id của action, payload
  */
 internal class ViaClickHook(
     private val plugin: Plugin,
@@ -30,6 +34,11 @@ internal class ViaClickHook(
     var installed = false
         private set
 
+    /**
+     * Ghi đè handler của Via cho packet custom_click_action.
+     *
+     * @return false nếu không hook được
+     */
     fun install(): Boolean {
         installed = try {
             val protocol = protocol() ?: run {
@@ -67,6 +76,7 @@ internal class ViaClickHook(
     }
 
     // khai báo kiểu rõ ràng: kiểu suy ra mang @Nullable của checkerframework, không có trên classpath
+    /** @return protocol 1.21.5 -> 1.21.6 của Via, null nếu không có */
     private fun protocol(): Protocol1_21_5To1_21_6? =
         Via.getManager().protocolManager.getProtocol(Protocol1_21_5To1_21_6::class.java)
 

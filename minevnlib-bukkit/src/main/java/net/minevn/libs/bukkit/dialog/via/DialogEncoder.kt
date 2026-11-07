@@ -23,6 +23,12 @@ import net.minevn.libs.bukkit.dialog.NoticeDialog
  * - [useCustomAction] = false: lệnh `/<CALLBACK_COMMAND> <token>.<index> <sep>v1<sep>v2...` theo thứ tự [keys]
  *
  * Click trong chữ không gửi được giá trị input, index của chúng nằm trong [textHandlers].
+ *
+ * @param dialog dialog cần encode
+ * @param token chuỗi phân biệt lần mở dialog, nằm trong id của callback
+ * @param separator chuỗi ngăn cách giá trị trong lệnh callback
+ * @param useCustomAction callback qua custom_click_action thay vì lệnh ẩn
+ * @throws IllegalArgumentException nếu dialog có input trùng key
  */
 internal class DialogEncoder(
     private val dialog: Dialog,
@@ -38,6 +44,10 @@ internal class DialogEncoder(
         require(keys.toSet().size == keys.size) { "Input key bị trùng: $keys" }
     }
 
+    /**
+     * @return NBT của dialog, đồng thời điền [handlers] và [textHandlers]
+     * @throws IllegalArgumentException nếu đường lệnh ẩn không chứa được dialog: có input multiline hoặc lệnh quá dài
+     */
     fun encode(): CompoundTag {
         val tag = CompoundTag()
         tag.putString("type", typeId())
@@ -75,12 +85,17 @@ internal class DialogEncoder(
         return tag
     }
 
+    /** @return id loại dialog của [dialog] */
     private fun typeId() = when (dialog) {
         is NoticeDialog -> "minecraft:notice"
         is ConfirmationDialog -> "minecraft:confirmation"
         is MultiActionDialog -> "minecraft:multi_action"
     }
 
+    /**
+     * @param body khối nội dung
+     * @return NBT của khối nội dung
+     */
     private fun encodeBody(body: DialogBody) = CompoundTag().apply {
         when (body) {
             is DialogBody.PlainMessage -> {
@@ -102,6 +117,10 @@ internal class DialogEncoder(
         }
     }
 
+    /**
+     * @param run đoạn chữ
+     * @return NBT component của đoạn chữ
+     */
     private fun encodeRun(run: DialogTextRun) = CompoundTag().apply {
         putString("text", run.text)
         run.font?.let { putString("font", it) }
@@ -121,7 +140,12 @@ internal class DialogEncoder(
         }
     }
 
-    /** Click trong chữ có format riêng, khác action của nút. */
+    /**
+     * Click trong chữ có format riêng, khác action của nút.
+     *
+     * @param action action của click
+     * @return NBT click_event
+     */
     private fun encodeClick(action: DialogAction) = CompoundTag().apply {
         when (action) {
             is DialogAction.OpenUrl -> {
@@ -159,6 +183,10 @@ internal class DialogEncoder(
         }
     }
 
+    /**
+     * @param input ô nhập
+     * @return NBT của ô nhập
+     */
     private fun encodeInput(input: DialogInput) = CompoundTag().apply {
         putString("key", input.key)
         when (input) {
@@ -211,6 +239,10 @@ internal class DialogEncoder(
         }
     }
 
+    /**
+     * @param button nút
+     * @return NBT của nút
+     */
     private fun encodeButton(button: DialogButton) = CompoundTag().apply {
         putLabel(button.label)
         button.tooltip?.let { put("tooltip", ComponentNbt.toNbt(it)) }
@@ -218,6 +250,12 @@ internal class DialogEncoder(
         button.action?.let { put("action", encodeAction(it)) }
     }
 
+    /**
+     * Callback được đăng ký vào [handlers] tại đây.
+     *
+     * @param action action của nút
+     * @return NBT action của nút
+     */
     private fun encodeAction(action: DialogAction) = CompoundTag().apply {
         when (action) {
             is DialogAction.OpenUrl -> {
@@ -276,8 +314,17 @@ internal class DialogEncoder(
         }
     }
 
+    /**
+     * Ghi trường label.
+     *
+     * @param label nhãn cần ghi
+     */
     private fun CompoundTag.putLabel(label: Component) = put("label", ComponentNbt.toNbt(label))
 
+    /**
+     * @param tags các compound
+     * @return ListTag chứa các compound, giữ thứ tự
+     */
     private fun compoundList(tags: List<CompoundTag>) = ListTag(CompoundTag::class.java).apply { tags.forEach(::add) }
 
     companion object {

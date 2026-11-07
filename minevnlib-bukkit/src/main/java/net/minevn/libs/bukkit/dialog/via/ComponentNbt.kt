@@ -10,6 +10,10 @@ import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
  * bằng mcstructs có sẵn trong ViaVersion.
  */
 internal object ComponentNbt {
+    /**
+     * @param component component của server
+     * @return NBT của component theo format 1.21.6
+     */
     fun toNbt(component: Component): Tag {
         val json = GsonComponentSerializer.gson().serialize(component)
         val parsed = TextComponentCodec.V1_20_5.deserializeJson(json)

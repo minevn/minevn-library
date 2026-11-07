@@ -28,35 +28,66 @@ import java.util.logging.Logger
  * - packet custom_click_action qua [ViaClickHook] ([onCustomClick])
  * - lệnh ẩn khi không hook được, bắt ở PlayerCommandPreprocessEvent để lấy nguyên chuỗi gốc
  *   (Bukkit tách args theo dấu cách)
+ *
+ * @param logger ghi lỗi khi handler ném exception
+ * @param guard trạng thái click dùng chung của backend
  */
 internal class CallbackSessions(private val logger: Logger, private val guard: DialogClickGuard) : Listener {
+    /**
+     * Callback của 1 lần mở dialog.
+     *
+     * @param token chuỗi ngẫu nhiên phân biệt lần mở, click của lần mở khác bị bỏ qua
+     * @param separator chuỗi ngẫu nhiên ngăn cách giá trị trong lệnh callback
+     * @param inputs input của dialog, theo thứ tự giá trị trong lệnh callback
+     * @param handlers các handler, vị trí là index gửi trong id của click
+     * @param afterAction after action của dialog
+     * @param textHandlers index của handler đăng ký từ click trong chữ,
+     *   nhận values rỗng vì click chữ không gửi được input
+     */
     class Session(
         val token: String,
         val separator: String,
-        /** theo thứ tự giá trị trong lệnh callback */
         val inputs: List<DialogInput>,
         val handlers: List<(DialogResponse) -> Unit>,
         val afterAction: AfterAction,
-        /** index của handler đăng ký từ click trong chữ, nhận values rỗng vì click chữ không gửi được input */
         val textHandlers: Set<Int>,
     )
 
     private val sessions = ConcurrentHashMap<UUID, Session>()
     private val random = SecureRandom()
 
+    /** @return token ngẫu nhiên cho 1 lần mở dialog */
     fun newToken() = randomString(TOKEN_LENGTH)
 
+    /** @return chuỗi ngăn cách ngẫu nhiên cho 1 lần mở dialog */
     fun newSeparator() = "~" + randomString(SEPARATOR_RANDOM_LENGTH) + "~"
 
+    /**
+     * Ghi nhận callback của dialog vừa mở, thay session cũ của player.
+     *
+     * @param player player được mở dialog
+     * @param session callback của dialog
+     */
     fun put(player: Player, session: Session) {
         sessions[player.uniqueId] = session
     }
 
+    /**
+     * Bỏ callback của dialog đang mở.
+     *
+     * @param player player cần bỏ callback
+     */
     fun remove(player: Player) {
         sessions.remove(player.uniqueId)
     }
 
-    /** id có dạng minevnlib:cb/<token>/<index>, payload là compound key -> giá trị input. */
+    /**
+     * Xử lý packet custom_click_action đã đẩy về main thread.
+     *
+     * @param uuid player đã click
+     * @param id có dạng minevnlib:cb/<token>/<index>
+     * @param payload compound key -> giá trị input
+     */
     fun onCustomClick(uuid: UUID, id: String, payload: Tag?) {
         val player = Bukkit.getPlayer(uuid) ?: return
         val parts = id.removePrefix(ViaClickHook.ID_PREFIX).split('/')
@@ -74,6 +105,13 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         handle(player, session, index, values)
     }
 
+    /**
+     * Lấy giá trị input từ payload của packet custom_click_action.
+     *
+     * @param session session của dialog
+     * @param payload payload của packet
+     * @return giá trị đã kiểm tra, null nếu có input thiếu hoặc không hợp lệ
+     */
     private fun payloadValues(session: Session, payload: Tag?): Map<String, String>? {
         val compound = payload as? CompoundTag
         // boolean trả theo on_true / on_false như đường lệnh
@@ -89,6 +127,11 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         }
     }
 
+    /**
+     * Bắt lệnh callback, huỷ lệnh trước khi tới Bukkit.
+     *
+     * @param event sự kiện player gửi lệnh
+     */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = false)
     fun onCommand(event: PlayerCommandPreprocessEvent) {
         val message = event.message
@@ -117,12 +160,25 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         handle(player, session, index, values)
     }
 
+    /**
+     * Xoá session và trạng thái click của player thoát.
+     *
+     * @param event sự kiện player thoát
+     */
     @EventHandler
     fun onQuit(event: PlayerQuitEvent) {
         sessions.remove(event.player.uniqueId)
         guard.forget(event.player.uniqueId)
     }
 
+    /**
+     * Chạy handler của click nếu dialog không bị khoá.
+     *
+     * @param player player đã click
+     * @param session session của dialog
+     * @param index index của handler trong [Session.handlers]
+     * @param values giá trị input đã kiểm tra
+     */
     private fun handle(player: Player, session: Session, index: Int, values: Map<String, String>) {
         val handler = session.handlers.getOrNull(index) ?: return
         if (guard.isLocked(player.uniqueId)) {
@@ -142,6 +198,13 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         }
     }
 
+    /**
+     * Lấy giá trị input từ phần sau token của lệnh callback.
+     *
+     * @param session session của dialog
+     * @param payload chuỗi giá trị, mỗi giá trị đứng sau [Session.separator]
+     * @return giá trị đã kiểm tra, null nếu sai định dạng, có input thiếu hoặc không hợp lệ
+     */
     private fun parseValues(session: Session, payload: String): Map<String, String>? {
         if (session.inputs.isEmpty()) {
             return emptyMap()
@@ -157,6 +220,10 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
         return DialogResponse.sanitizeAll(session.inputs) { raw[it.key] }
     }
 
+    /**
+     * @param length độ dài chuỗi
+     * @return chuỗi ngẫu nhiên gồm a-z, 0-9
+     */
     private fun randomString(length: Int) = buildString(length) {
         repeat(length) { append(ALPHABET[random.nextInt(ALPHABET.length)]) }
     }
