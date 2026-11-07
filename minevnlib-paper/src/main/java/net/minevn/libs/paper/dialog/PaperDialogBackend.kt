@@ -304,7 +304,12 @@ class PaperDialogBackend : DialogBackend, Listener {
         audience: Audience,
     ) {
         val player = audience as? Player ?: return
-        if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing || guard.isLocked(player.uniqueId)) {
+        if (!guard.allowClick(player.uniqueId) || showings[player.uniqueId] !== showing) {
+            return
+        }
+        if (guard.isLocked(player.uniqueId)) {
+            // click bị bỏ nhưng client vẫn chuyển sang màn chờ, phải nhớ để DialogAPI.clear gỡ được
+            guard.onClick(player, dialog.afterAction)
             return
         }
         val values = if (response == null) {

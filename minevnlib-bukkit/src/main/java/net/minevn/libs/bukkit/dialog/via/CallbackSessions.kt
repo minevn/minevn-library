@@ -182,6 +182,8 @@ internal class CallbackSessions(private val logger: Logger, private val guard: D
     private fun handle(player: Player, session: Session, index: Int, values: Map<String, String>) {
         val handler = session.handlers.getOrNull(index) ?: return
         if (guard.isLocked(player.uniqueId)) {
+            // click bị bỏ nhưng client vẫn chuyển sang màn chờ, phải nhớ để DialogAPI.clear gỡ được
+            guard.onClick(player, session.afterAction)
             return
         }
         // dialog đóng sau khi bấm thì callback chỉ chạy 1 lần

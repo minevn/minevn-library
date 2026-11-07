@@ -107,4 +107,29 @@ class DialogClickGuardTest {
         click()
         assertEquals(2, clicks)
     }
+
+    @Test
+    fun testLockedClickRemembersWaitingScreen() {
+        val guard = DialogClickGuard()
+        val sessions = CallbackSessions(mockk(relaxed = true), guard)
+        val uuid = UUID.randomUUID()
+        val player = mockk<Player>(relaxed = true)
+        every { player.uniqueId } returns uuid
+        var clicks = 0
+        val handler: (DialogResponse) -> Unit = { clicks++ }
+        sessions.put(player, CallbackSessions.Session(
+            "token", "~s~", emptyList(), listOf(handler), AfterAction.WAIT_FOR_RESPONSE, emptySet(),
+        ))
+        val event = mockk<PlayerCommandPreprocessEvent>(relaxed = true)
+        every { event.message } returns "/${DialogEncoder.CALLBACK_COMMAND} token.0"
+        every { event.player } returns player
+
+        guard.lock(uuid)
+        sessions.onCommand(event)
+        assertEquals(0, clicks)
+
+        // client đã ở màn chờ dù click bị bỏ, clear phải gỡ được
+        guard.closeWaitingScreen(player)
+        verify(exactly = 1) { player.closeInventory() }
+    }
 }

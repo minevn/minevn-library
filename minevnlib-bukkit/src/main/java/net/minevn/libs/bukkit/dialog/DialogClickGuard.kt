@@ -47,7 +47,8 @@ class DialogClickGuard internal constructor(private val clock: () -> Long) {
     }
 
     /**
-     * Player vừa bấm nút callback của dialog có [afterAction]. Gọi trước khi chạy handler.
+     * Player vừa bấm nút callback của dialog có [afterAction]. Gọi trước khi chạy handler,
+     * và cả khi click bị bỏ vì dialog đang khoá, vì client vẫn chuyển màn hình.
      *
      * @param player player vừa bấm
      * @param afterAction after action của dialog
